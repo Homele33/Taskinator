@@ -8,7 +8,7 @@ import threading
 from tktimepicker import SpinTimePickerModern, constants
 import time
 from plyer import notification
-from Task import Task
+from Task import Task, Subtask
 
 class TimePicker(ttk.Frame):
     def __init__(self, parent, *args, **kwargs):
@@ -211,13 +211,8 @@ class NewTaskWindow(tk.Toplevel):
     def add_subtask(self):
         subtask_name = self.subtask_var.get().strip()
         if subtask_name:
-            subtask = Task(
-                name=subtask_name,
-                description="",
-                due_date="",
-                due_time="",
-                category="",
-                priority="Low"
+            subtask = Subtask(
+                name=subtask_name
             )
             self.subtasks.append(subtask)
             self.subtasks_listbox.insert(tk.END, subtask_name)
@@ -609,8 +604,16 @@ class ScheduleOrganizer:
         selected_item = self.tree.selection()
         if selected_item:
             item_id = selected_item[0]
-            task_idx = int(item_id[1:]) - 1
-            del self.tasks[task_idx]
+            if(item_id.__contains__("_")):
+                parent_id, item_id = item_id.split("_")
+                parent_id = int(parent_id[1:])-1
+                task_idx = int(item_id[1:])-1
+                del self.tasks[parent_id].subtasks[task_idx]
+            
+            else:
+                task_idx = int(item_id[1:]) - 1
+                del self.tasks[task_idx]
+
             self.save_tasks()
             self.refresh_task_list()
             self.update_calendar_tasks()
@@ -651,7 +654,7 @@ class ScheduleOrganizer:
                 subtask_id = f"{task_id}_S{j+1}"
                 self.tree.insert(task_id, tk.END, iid=subtask_id, values=(
                     f"↳ {subtask.name}",  # Add arrow to show hierarchy
-                    subtask.description[:50] + "..." if len(subtask.description) > 50 else subtask.description,
+                    "",
                     "",  # No due date for subtasks
                     "",  # No time for subtasks
                     "",  # No category for subtasks

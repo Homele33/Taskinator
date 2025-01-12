@@ -2,15 +2,19 @@ import json
 from datetime import datetime
 
 class Subtask:
-    def __init__(self,name: str, priority):
+    def __init__(self,name: str, is_completed = False):
         self.name : str = name
-        self.priority = priority
-        self.is_completed : bool = False
+        self.is_completed : bool = is_completed
     
     def toggle_completed(self) -> None:
         self.is_completed = not self.is_completed
-    
 
+    def to_dict(self):
+        #  return the subtask as a dictionary
+        return {
+            "name": self.name,
+            "completed": self.is_completed,
+        }
 
 class Task(Subtask):
     def __init__(self, name: str, description: str, due_date, due_time, category, priority):
@@ -140,7 +144,7 @@ class Task(Subtask):
         
         # Recursively create subtasks
         for subtask_data in data["subtasks"]:
-            subtask = cls.from_json(subtask_data)
+            subtask = Subtask(subtask_data["name"],subtask_data["completed"])
             task.add_subtask(subtask)
         
         return task
