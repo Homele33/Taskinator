@@ -5,9 +5,54 @@ from datetime import datetime, timedelta
 import os
 from tkcalendar import DateEntry, Calendar
 import threading
+from tktimepicker import SpinTimePickerModern, constants
 import time
 from plyer import notification
+from Task import Task
 
+class TimePicker(ttk.Frame):
+    def __init__(self, parent, *args, **kwargs):
+        super().__init__(parent, *args, **kwargs)
+        
+        # Time frame
+        time_frame = ttk.Frame(self)
+        time_frame.pack(fill=tk.X)
+        
+        # Hours
+        hour_frame = ttk.Frame(time_frame)
+        hour_frame.pack(side=tk.LEFT, padx=5)
+        ttk.Label(hour_frame, text="Hour").pack()
+        self.hour_var = tk.StringVar(value="09")
+        self.hour_spinbox = ttk.Spinbox(
+            hour_frame,
+            from_=0,
+            to=23,
+            width=2,
+            format="%02.0f",
+            textvariable=self.hour_var,
+            wrap=True
+        )
+        self.hour_spinbox.pack()
+        
+        # Minutes
+        minute_frame = ttk.Frame(time_frame)
+        minute_frame.pack(side=tk.LEFT, padx=5)
+        ttk.Label(minute_frame, text="Minute").pack()
+        self.minute_var = tk.StringVar(value="00")
+        self.minute_spinbox = ttk.Spinbox(
+            minute_frame,
+            from_=0,
+            to=59,
+            width=2,
+            format="%02.0f",
+            textvariable=self.minute_var,
+            wrap=True,
+            increment=5
+        )
+        self.minute_spinbox.pack()
+        
+    def get_time(self):
+        return f"{self.hour_var.get()}:{self.minute_var.get()}"
 
 class TimeEntry(ttk.Frame):
     def __init__(self, parent, *args, **kwargs):
@@ -38,84 +83,146 @@ class TimeEntry(ttk.Frame):
     def get_time(self):
         return f"{self.hour_var.get()}:{self.minute_var.get()}"
 
-
 class NewTaskWindow(tk.Toplevel):
     def __init__(self, parent, categories, callback):
         super().__init__(parent)
         self.callback = callback
-
+        
         self.title("New Task")
-        self.geometry("500x600")
-
+        self.geometry("700x700")
+        self.minsize(500, 600)
+        
         # Make window modal
         self.transient(parent)
         self.grab_set()
-
+        
+        # Create scrollable canvas
+        canvas = tk.Canvas(self)
+        scrollbar = ttk.Scrollbar(self, orient="vertical", command=canvas.yview)
+        self.scrollable_frame = ttk.Frame(canvas)
+        
+        self.scrollable_frame.bind(
+            "<Configure>",
+            lambda e: canvas.configure(scrollregion=canvas.bbox("all"))
+        )
+        
+        canvas.create_window((0, 0), window=self.scrollable_frame, anchor="nw")
+        canvas.configure(yscrollcommand=scrollbar.set)
+        
         # Create main frame with padding
-        main_frame = ttk.Frame(self, padding="20")
+        main_frame = ttk.Frame(self.scrollable_frame, padding="20")
         main_frame.pack(fill=tk.BOTH, expand=True)
-
+        
         # Task name
-        ttk.Label(main_frame, text="Task Name:").pack(fill=tk.X, pady=(0, 5))
+        name_frame = ttk.LabelFrame(main_frame, text="Task Name", padding="10")
+        name_frame.pack(fill=tk.X, pady=(0, 10))
+        
         self.task_var = tk.StringVar()
-        ttk.Entry(main_frame, textvariable=self.task_var, width=40).pack(fill=tk.X, pady=(0, 15))
-
-        # Date and time frame
+        ttk.Entry(name_frame, textvariable=self.task_var).pack(fill=tk.X)
+        
+        # Task description
+        desc_frame = ttk.LabelFrame(main_frame, text="Description", padding="10")
+        desc_frame.pack(fill=tk.X, pady=(0, 10))
+        
+        self.description_text = tk.Text(desc_frame, height=4)
+        self.description_text.pack(fill=tk.X)
+        
+        # Date and time
         datetime_frame = ttk.LabelFrame(main_frame, text="Due Date and Time", padding="10")
-        datetime_frame.pack(fill=tk.X, pady=(0, 15))
-
+        datetime_frame.pack(fill=tk.X, pady=(0, 10))
+        
         # Date picker
-        ttk.Label(datetime_frame, text="Date:").pack(pady=(0, 5))
-        self.date_picker = DateEntry(datetime_frame, width=12, background='darkblue',
-                                     foreground='white', borderwidth=2)
-        self.date_picker.pack(pady=(0, 10))
-
+        date_frame = ttk.Frame(datetime_frame)
+        date_frame.pack(fill=tk.X, pady=5)
+        ttk.Label(date_frame, text="Date:").pack(side=tk.LEFT, padx=(0, 10))
+        self.date_picker = DateEntry(date_frame, width=12, background='darkblue',
+                                   foreground='white', borderwidth=2)
+        self.date_picker.pack(side=tk.LEFT)
+        
         # Time picker
-        ttk.Label(datetime_frame, text="Time:").pack(pady=(0, 5))
-        self.time_picker = TimeEntry(datetime_frame)
-        self.time_picker.pack(pady=(0, 5))
-
-        # Category and Priority frame
+        time_frame = ttk.Frame(datetime_frame)
+        time_frame.pack(fill=tk.X, pady=5)
+        ttk.Label(time_frame, text="Time:").pack(side=tk.LEFT, padx=(0, 10))
+        self.time_picker = TimePicker(time_frame)
+        self.time_picker.pack(side=tk.LEFT)
+        
+        # Category and Priority
         details_frame = ttk.LabelFrame(main_frame, text="Task Details", padding="10")
-        details_frame.pack(fill=tk.X, pady=(0, 15))
-
+        details_frame.pack(fill=tk.X, pady=(0, 10))
+        
         # Category
-        ttk.Label(details_frame, text="Category:").pack(pady=(0, 5))
-        self.category_var = tk.StringVar()
-        ttk.Combobox(details_frame, textvariable=self.category_var,
-                     values=categories, width=15).pack(pady=(0, 10))
-        self.category_var.set("Other")
-
+        cat_frame = ttk.Frame(details_frame)
+        cat_frame.pack(fill=tk.X, pady=5)
+        ttk.Label(cat_frame, text="Category:").pack(side=tk.LEFT, padx=(0, 10))
+        self.category_var = tk.StringVar(value="Other")
+        ttk.Combobox(cat_frame, textvariable=self.category_var,
+                    values=categories, width=15).pack(side=tk.LEFT)
+        
         # Priority
-        ttk.Label(details_frame, text="Priority:").pack(pady=(0, 5))
-        self.priority_var = tk.StringVar()
-        ttk.Combobox(details_frame, textvariable=self.priority_var,
-                     values=["High", "Medium", "Low"], width=15).pack(pady=(0, 10))
-        self.priority_var.set("Medium")
-
-        # Reminder frame
-        reminder_frame = ttk.LabelFrame(main_frame, text="Reminder", padding="10")
-        reminder_frame.pack(fill=tk.X, pady=(0, 15))
-
-        reminder_inner = ttk.Frame(reminder_frame)
-        reminder_inner.pack(fill=tk.X)
-
-        self.reminder_var = tk.StringVar()
-        ttk.Combobox(reminder_inner, textvariable=self.reminder_var,
-                     values=["5", "15", "30", "60", "120"], width=10).pack(side=tk.LEFT, padx=5)
-        self.reminder_var.set("30")
-        ttk.Label(reminder_inner, text="minutes before").pack(side=tk.LEFT)
-
+        pri_frame = ttk.Frame(details_frame)
+        pri_frame.pack(fill=tk.X, pady=5)
+        ttk.Label(pri_frame, text="Priority:").pack(side=tk.LEFT, padx=(0, 10))
+        self.priority_var = tk.StringVar(value="Medium")
+        ttk.Combobox(pri_frame, textvariable=self.priority_var,
+                    values=["High", "Medium", "Low"], width=15).pack(side=tk.LEFT)
+        
+        # Subtasks
+        subtasks_frame = ttk.LabelFrame(main_frame, text="Subtasks", padding="10")
+        subtasks_frame.pack(fill=tk.X, pady=(0, 10))
+        
+        # Subtask entry
+        entry_frame = ttk.Frame(subtasks_frame)
+        entry_frame.pack(fill=tk.X, pady=5)
+        
+        self.subtask_var = tk.StringVar()
+        ttk.Entry(entry_frame, textvariable=self.subtask_var).pack(side=tk.LEFT, fill=tk.X, expand=True, padx=(0, 5))
+        ttk.Button(entry_frame, text="Add", command=self.add_subtask, width=10).pack(side=tk.LEFT)
+        
+        # Subtasks listbox with scrollbar
+        listbox_frame = ttk.Frame(subtasks_frame)
+        listbox_frame.pack(fill=tk.BOTH, expand=True)
+        
+        self.subtasks_listbox = tk.Listbox(listbox_frame, height=4)
+        subtask_scrollbar = ttk.Scrollbar(listbox_frame, orient="vertical", command=self.subtasks_listbox.yview)
+        self.subtasks_listbox.configure(yscrollcommand=subtask_scrollbar.set)
+        
+        self.subtasks_listbox.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        subtask_scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+        self.subtasks = []
+        
         # Buttons
         btn_frame = ttk.Frame(main_frame)
         btn_frame.pack(fill=tk.X, pady=(10, 0))
-
-        ttk.Button(btn_frame, text="Cancel", command=self.destroy).pack(side=tk.RIGHT, padx=5)
-        ttk.Button(btn_frame, text="Add Task", command=self.submit).pack(side=tk.RIGHT, padx=5)
-
+        
+        ttk.Button(btn_frame, text="Cancel", command=self.destroy, width=10).pack(side=tk.RIGHT, padx=5)
+        ttk.Button(btn_frame, text="Add Task", command=self.submit, width=10).pack(side=tk.RIGHT, padx=5)
+        
+        # Pack the canvas and scrollbar
+        canvas.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+        
+        # Configure canvas scrolling
+        self.bind("<MouseWheel>", lambda e: canvas.yview_scroll(-1*(e.delta//120), "units"))
+        canvas.bind("<Configure>", lambda e: canvas.configure(scrollregion=canvas.bbox("all")))
+        
         # Center the window
         self.center_window()
-
+        
+    def add_subtask(self):
+        subtask_name = self.subtask_var.get().strip()
+        if subtask_name:
+            subtask = Task(
+                name=subtask_name,
+                description="",
+                due_date="",
+                due_time="",
+                category="",
+                priority="Low"
+            )
+            self.subtasks.append(subtask)
+            self.subtasks_listbox.insert(tk.END, subtask_name)
+            self.subtask_var.set("")
+        
     def center_window(self):
         self.update_idletasks()
         width = self.winfo_width()
@@ -123,26 +230,69 @@ class NewTaskWindow(tk.Toplevel):
         x = (self.winfo_screenwidth() // 2) - (width // 2)
         y = (self.winfo_screenheight() // 2) - (height // 2)
         self.geometry(f'+{x}+{y}')
-
+        
     def submit(self):
-        task = self.task_var.get().strip()
+        task_name = self.task_var.get().strip()
+        description = self.description_text.get("1.0", tk.END).strip()
+        
+        # Get date in correct format
         date = self.date_picker.get_date().strftime("%Y-%m-%d")
+        
+        # Get time in correct format
         time = self.time_picker.get_time()
-
-        if not task:
+        
+        if not task_name:
             messagebox.showerror("Error", "Please enter a task name", parent=self)
             return
+        
+        # Create new Task instance with separate date and time
+        task = Task(
+            name=task_name,
+            description=description,
+            due_date=date,  # Pass date separately
+            due_time=time,  # Pass time separately
+            category=self.category_var.get(),
+            priority=self.priority_var.get()
+        )
+        
+        for subtask in self.subtasks:
+            task.add_subtask(subtask)
+        
+        self.callback(task)
+        self.destroy()
 
-        task_data = {
-            "task": task,
-            "due_date": f"{date} {time}",
-            "category": self.category_var.get(),
-            "priority": self.priority_var.get(),
-            "status": "Pending",
-            "reminder": self.reminder_var.get()
-        }
+class EditTaskWindow(NewTaskWindow):
+    def __init__(self, parent, categories, callback, task):
+        super().__init__(parent, categories, callback)
+        self.title("Edit Task")
+        self.task = task
+        self.populate_fields()
 
-        self.callback(task_data)
+    def populate_fields(self):
+        # Populate the fields with existing task data
+        self.task_name.set(self.task.name)
+        self.date_picker.set_date(datetime.strptime(self.task.due_date, '%Y-%m-%d').date())
+        self.time_picker.set_time(self.task.due_time)
+        self.category_var.set(self.task.category)
+        self.priority_var.set(self.task.priority)
+
+    def submit(self):
+        # Override submit to update existing task instead of creating new one
+        name = self.task_name.get()
+        due_date = self.date_picker.get_date().strftime('%Y-%m-%d')
+        due_time = self.time_picker.get_time()
+        category = self.category_var.get()
+        priority = self.priority_var.get()
+
+        self.task.update_task_details(
+            name=name,
+            due_date=due_date, 
+            due_time=due_time,
+            category=category,
+            priority=priority
+        )
+        
+        self.callback(self.task, is_new=False)
         self.destroy()
 
 class ScheduleOrganizer:
@@ -197,7 +347,7 @@ class ScheduleOrganizer:
         )
 
         # Data storage
-        self.tasks = []
+        self.tasks :Task = []
         self.categories = ["Work", "Personal", "Study", "Health", "Other"]
         self.load_tasks()
 
@@ -291,30 +441,68 @@ class ScheduleOrganizer:
         ttk.Button(reminder_frame, text="Add Task", command=self.add_task).pack(side=tk.LEFT, padx=20)
 
     def create_task_list(self):
-        # List container
         list_container = ttk.Frame(self.tasks_tab, padding="10")
         list_container.pack(fill=tk.BOTH, expand=True)
-
+        
+        # Controls frame
         controls_frame = ttk.Frame(list_container)
         controls_frame.pack(fill=tk.X, pady=(0, 10))
-
+        
+        # Filter
         ttk.Label(controls_frame, text="Filter:").pack(side=tk.LEFT, padx=(0, 5))
         self.filter_var = tk.StringVar()
-        filter_combo = ttk.Combobox(controls_frame, textvariable=self.filter_var, values=["All"] + self.categories,
-                                    width=15)
+        filter_combo = ttk.Combobox(controls_frame, textvariable=self.filter_var,
+                                  values=["All"] + self.categories, width=15)
         filter_combo.pack(side=tk.LEFT, padx=(0, 10))
         filter_combo.set("All")
         filter_combo.bind("<<ComboboxSelected>>", lambda e: self.refresh_task_list())
-
-        ttk.Button(controls_frame, text="Delete Selected", command=self.delete_task).pack(side=tk.RIGHT, padx=5)
-        ttk.Button(controls_frame, text="Clear Completed", command=self.clear_completed).pack(side=tk.RIGHT, padx=5)
-
-        # Treeview
-        columns = ("Task", "Due Date", "Category", "Priority", "Status")
-        self.tree = ttk.Treeview(list_container, columns=columns, show="headings")
+        
+        # Buttons
+        ttk.Button(controls_frame, text="Delete Selected",
+                  command=self.delete_task).pack(side=tk.RIGHT, padx=5)
+        ttk.Button(controls_frame, text="Clear Completed",
+                  command=self.clear_completed).pack(side=tk.RIGHT, padx=5)
+        
+        # Create treeview with scrollbar
+        tree_frame = ttk.Frame(list_container)
+        tree_frame.pack(fill=tk.BOTH, expand=True)
+        
+        # Treeview with show="tree headings" to show hierarchy
+        columns = ("Task", "Description", "Due Date", "Time", "Category", "Priority", "Status", "Progress")
+        self.tree = ttk.Treeview(tree_frame, columns=columns, show="tree headings")
+        
+        # Set column headings and widths
+        widths = {
+            "Task": 100,
+            "Description": 200,
+            "Due Date": 100,
+            "Time": 80,
+            "Category": 100,
+            "Priority": 80,
+            "Status": 80,
+            "Progress": 100
+        }
+        
         for col in columns:
             self.tree.heading(col, text=col)
-        self.tree.pack(fill=tk.BOTH, expand=True)
+            self.tree.column(col, width=widths.get(col, 150))
+        
+        # Scrollbars
+        y_scrollbar = ttk.Scrollbar(tree_frame, orient=tk.VERTICAL, command=self.tree.yview)
+        x_scrollbar = ttk.Scrollbar(tree_frame, orient=tk.HORIZONTAL, command=self.tree.xview)
+        self.tree.configure(yscrollcommand=y_scrollbar.set, xscrollcommand=x_scrollbar.set)
+        
+        # Pack elements
+        self.tree.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        y_scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+        x_scrollbar.pack(side=tk.BOTTOM, fill=tk.X)
+        
+        # Bind double-click event
+        self.tree.bind("<Double-1>", self.toggle_task_status)
+        
+        # Load existing tasks
+        self.refresh_task_list()
+        
     def create_calendar_view(self):
         # Create calendar widget
         self.cal = Calendar(self.calendar_tab, selectmode='day',
@@ -339,37 +527,37 @@ class ScheduleOrganizer:
         self.cal.bind("<<CalendarSelected>>", self.update_calendar_tasks)
 
     def update_calendar_tasks(self, event=None):
-        # Clear current tasks
+         # Clear current tasks
         for item in self.cal_tree.get_children():
             self.cal_tree.delete(item)
 
         selected_date = self.cal.get_date()
-
+        
         # Filter tasks for selected date
-        day_tasks = [task for task in self.tasks
-                     if task["due_date"].startswith(selected_date)]
-
+        day_tasks = [task for task in self.tasks if task.due_date == selected_date]
+        
         # Sort by time
-        day_tasks.sort(key=lambda x: x["due_date"])
-
+        day_tasks.sort(key=lambda x: x.due_time)
+        
         # Add tasks to tree
         for task in day_tasks:
-            time = task["due_date"].split()[1] if len(task["due_date"].split()) > 1 else ""
             self.cal_tree.insert("", tk.END, values=(
-                time,
-                task["task"],
-                task["category"],
-                task["priority"]
+                task.due_time,
+                task.name,
+                task.category,
+                task.priority
             ))
 
-    def add_task(self, task_data):
+    def add_task(self, task: Task):
         try:
-            datetime.strptime(task_data["due_date"], "%Y-%m-%d %H:%M")
-        except ValueError:
-            messagebox.showerror("Error", "Invalid date or time")
+            # Validate date and time separately
+            datetime.strptime(task.due_date, "%Y-%m-%d")
+            datetime.strptime(task.due_time, "%H:%M")
+        except ValueError as e:
+            messagebox.showerror("Error", f"Invalid date or time format: {str(e)}")
             return
-
-        self.tasks.append(task_data)
+            
+        self.tasks.append(task)
         self.save_tasks()
         self.refresh_task_list()
         self.update_calendar_tasks()
@@ -382,32 +570,36 @@ class ScheduleOrganizer:
         while True:
             current_time = datetime.now()
             for task in self.tasks:
-                if task["status"] == "Pending" and task["due_date"]:
+                # Use dot notation
+                if task.status == "Pending" and task.due_date:
                     try:
-                        due_time = datetime.strptime(task["due_date"], "%Y-%m-%d %H:%M")
-                        reminder_minutes = int(task["reminder"])
+                        due_time = datetime.strptime(task.due_date, "%Y-%m-%d %H:%M")
+                        reminder_minutes = int(task.reminder)
                         reminder_time = due_time - timedelta(minutes=reminder_minutes)
 
                         if current_time >= reminder_time and current_time < reminder_time + timedelta(minutes=1):
                             notification.notify(
                                 title="Task Reminder",
-                                message=f"Task '{task['task']}' is due in {reminder_minutes} minutes!",
+                                message=f"Task '{task.name}' is due in {reminder_minutes} minutes!",
                                 timeout=10
                             )
                     except ValueError:
                         continue
-            time.sleep(60)  # Check every minute
+            time.sleep(60)
 
     def toggle_task_status(self, event):
         selected_item = self.tree.selection()
         if selected_item:
             item_id = selected_item[0]
-            task_idx = int(item_id[1:]) - 1
-
-            if self.tasks[task_idx]["status"] == "Pending":
-                self.tasks[task_idx]["status"] = "Completed"
+            if(item_id.__contains__("_")):
+                parent_id, item_id = item_id.split("_")
+                parent_id = int(parent_id[1:])-1
+                task_idx = int(item_id[1:])-1
+                self.tasks[parent_id].subtasks[task_idx].toggle_completed()
+                self.tasks[parent_id].calculate_subtask_percentages()
             else:
-                self.tasks[task_idx]["status"] = "Pending"
+                task_idx = int(item_id[1:]) - 1
+                self.tasks[task_idx].toggle_completed()
 
             self.save_tasks()
             self.refresh_task_list()
@@ -424,7 +616,7 @@ class ScheduleOrganizer:
             self.update_calendar_tasks()
 
     def clear_completed(self):
-        self.tasks = [task for task in self.tasks if task["status"] != "Completed"]
+        self.tasks = [task for task in self.tasks if not task.is_completed]
         self.save_tasks()
         self.refresh_task_list()
         self.update_calendar_tasks()
@@ -432,31 +624,53 @@ class ScheduleOrganizer:
     def refresh_task_list(self):
         for item in self.tree.get_children():
             self.tree.delete(item)
-
+            
         filtered_tasks = self.tasks
         if self.filter_var.get() != "All":
-            filtered_tasks = [task for task in self.tasks
-                              if task["category"] == self.filter_var.get()]
-
+            filtered_tasks = [task for task in self.tasks 
+                            if task.category == self.filter_var.get()]
+            
         for i, task in enumerate(filtered_tasks):
-            self.tree.insert("", tk.END, iid=f"I{i + 1}", values=(
-                task["task"],
-                task["due_date"],
-                task["category"],
-                task["priority"],
-                task["status"]
+            progress = f"{task.completed_subtasks_percentage:.1f}%" if task.total_subtasks > 0 else "N/A"
+            task_id = f"I{i+1}"
+            
+            # Insert main task
+            self.tree.insert("", tk.END, iid=task_id, values=(
+                task.name,
+                task.description[:50] + "..." if len(task.description) > 50 else task.description,
+                task.due_date,
+                task.due_time,
+                task.category,
+                task.priority,
+                "Completed" if task.is_completed else "Pending",
+                progress
             ))
+            
+            # Insert subtasks
+            for j, subtask in enumerate(task.subtasks):
+                subtask_id = f"{task_id}_S{j+1}"
+                self.tree.insert(task_id, tk.END, iid=subtask_id, values=(
+                    f"↳ {subtask.name}",  # Add arrow to show hierarchy
+                    subtask.description[:50] + "..." if len(subtask.description) > 50 else subtask.description,
+                    "",  # No due date for subtasks
+                    "",  # No time for subtasks
+                    "",  # No category for subtasks
+                    "",  # No priority for subtasks
+                    "Completed" if subtask.is_completed else "Pending",
+                    ""   # No progress for subtasks
+                ))
 
     def load_tasks(self):
         try:
             with open("tasks.json", "r") as f:
-                self.tasks = json.load(f)
+                task_data = json.load(f)
+                self.tasks = [Task.from_json(data) for data in task_data]
         except FileNotFoundError:
             self.tasks = []
 
     def save_tasks(self):
         with open("tasks.json", "w") as f:
-            json.dump(self.tasks, f)
+            json.dump([task.to_dict() for task in self.tasks], f)
 
     def create_tabs(self):
         self.notebook = ttk.Notebook(self.main_container)
@@ -470,6 +684,16 @@ class ScheduleOrganizer:
 
         self.create_task_list()
         self.create_calendar_view()
+
+    def edit_task(self, task):
+        EditTaskWindow(self, self.categories, self.update_task_list, task)
+
+    def update_task_list(self, task, is_new=True):
+        if is_new:
+            self.tasks.append(task)
+        self.refresh_task_list()
+        
+    
 
 if __name__ == "__main__":
     root = tk.Tk()
