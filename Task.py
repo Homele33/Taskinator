@@ -1,6 +1,7 @@
 import json
 from datetime import datetime
 
+
 class Subtask:
     def __init__(self,name: str, is_completed = False):
         self.name : str = name
@@ -15,10 +16,13 @@ class Subtask:
             "name": self.name,
             "completed": self.is_completed,
         }
+    def __str__(self):
+        return self.name
 
 class Task(Subtask):
-    def __init__(self, name: str, description: str, due_date, due_time, category, priority):
+    def __init__(self, name: str, description = None, due_date = None, due_time = None, category = None, priority = None):
         # Initialize a new Task instance.
+        super().__init__(name)
         self.name = name
         self.description = description
         self.due_date = due_date
@@ -26,7 +30,7 @@ class Task(Subtask):
         self.is_completed = False
         self.category = category
         self.priority = priority
-        self.subtasks: Subtask = []
+        self.subtasks = []
         self.completed_subtasks = 0
         self.total_subtasks = 0
         self.remaining_subtasks = 0 
