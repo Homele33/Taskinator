@@ -1,9 +1,13 @@
+from tkinter import ttk
+
 import customtkinter as ctk
+
+from CalendarView import CalendarView
 from Task import Task, Subtask
 from TaskList import TaskList
+from tkcalendar import Calendar
 
-
-class Taskmaster:
+class Taskinator:
     # Initialize the TaskManager instance.
     def __init__(self):
         # define the root window.
@@ -25,6 +29,8 @@ class Taskmaster:
         # Create the tabview to hold the task list and calendar view.
         self.tabview = self.create_tabs()
         self.task_list = TaskList(master=self.tabview.tab("Tasks"))
+
+        self.calendar = CalendarView(master=self.tabview.tab("Calendar"))
 
         # Create a new task entry widget.
         self.new_entry = ctk.CTkEntry(self.main_container, placeholder_text="Enter a new task", )
@@ -50,7 +56,7 @@ class Taskmaster:
 
         # Create the task list and calendar tabs.
         tabview.add("Tasks")
-        tabview.add("Calender")
+        tabview.add("Calendar")
         return tabview
 
     def add_task(self):
@@ -63,11 +69,8 @@ class Taskmaster:
         selected_item = self.task_list.task_tree.treeview.selection()
         print("Selected item: ", selected_item)
 
-    def create_calendar_view(self):
-        pass
-
 
 if __name__ == "__main__":
 
-    app = Taskmaster()
+    app = Taskinator()
     app.root.mainloop()

@@ -2,11 +2,13 @@ import customtkinter as ctk
 from tkinter import ttk
 
 class TaskTreeview(ctk.CTkFrame):
-    def __init__(self, master):
+    def __init__(self, master, columns=None):
         super().__init__(master = master)
+        if columns is None:
+            columns = []
         self.master = master
 
-        # treeview customization
+        # theme customization
         background_color = self._apply_appearance_mode(ctk.ThemeManager.theme["CTkFrame"]["fg_color"])
         text_color = self._apply_appearance_mode(ctk.ThemeManager.theme["CTkLabel"]["text_color"])
         selected_color = self._apply_appearance_mode(ctk.ThemeManager.theme["CTkButton"]["fg_color"])
@@ -16,9 +18,11 @@ class TaskTreeview(ctk.CTkFrame):
         tree_style.configure("Treeview", background=background_color, fieldbackground=background_color,
                              foreground=text_color)
         tree_style.map("Treeview", background=[('selected', selected_color)])
+
         self.bind("<<TreeviewSelect>>", lambda event: self.focus_get())
 
         # treeview widget data
+
         self.treeview = ttk.Treeview(master=self.master, show="tree")
         self.treeview.pack(fill="both", expand=True)
 

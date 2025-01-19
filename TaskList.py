@@ -6,7 +6,8 @@ class TaskList:
     # TaskList class to manage tasks
     def __init__(self, master):
         # create the task treeview
-        self.task_tree = TaskTreeview(master)
+        columns = ("Time", "Task", "Category", "Priority")
+        self.task_tree = TaskTreeview(master, columns=columns)
         # define the categories and priorities
         self.categories = ["Personal", "Work", "School", "Home"]
         self.priorities = ["High", "Medium", "Low"]
