@@ -1,5 +1,0 @@
-babel==2.16.0
-plyer==2.1.0
-tkcalendar==1.6.1
-tkTimePicker==2.0.2
-customtkinter~=5.2.2
