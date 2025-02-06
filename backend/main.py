@@ -1,7 +1,8 @@
 from flask import request, jsonify
 from config import app, db
 from models import Task, SubTask
-from datetime import datetime
+from datetime import date
+from sqlalchemy.sql import null
 
 @app.route("/api/tasks", methods=["GET"])# get all tasks
 def get_tasks():
@@ -27,19 +28,14 @@ def get_subtasks(task_id):
 def create_task():
     title = request.json.get("title")
     description = request.json.get("description")
-    
+    due_date = request.json.get("dueDate")
+    if(due_date):
+        due_date = date.fromisoformat(due_date)
     due_time = request.json.get("dueTime")
     sub_tasks = request.json.get("subTasks")
     priority = request.json.get("priority")
     status = request.json.get("status")
-
-    due_date_string = request.json.get("dueDate")
-    if due_date_string:
-        print(due_date_string)
-        due_date_string = due_date_string.split("-")
-        due_date = datetime(year=int(due_date_string[0]), month=int(due_date_string[1]),day=int(due_date_string[2]))
-    else:
-        due_date = request.json.get("dueDate")
+    
     if not title:
         return jsonify({"message": "You must include a title"}), 400
 
@@ -84,8 +80,12 @@ def update_task(task_id):
     data = request.json
     task.title = data.get("title", task.title)
     task.description = data.get("description", task.description)
-    task.due_date = data.get("dueDate", task.due_date)
-    task.due_time = data.get("dueTime", task.due_time)
+    
+    due_date = data.get("dueDate")
+    if due_date != "" and due_date:
+        task.due_date = date.fromisoformat(due_date)
+    else:
+        task.due_date = null()
 
     db.session.commit()
 

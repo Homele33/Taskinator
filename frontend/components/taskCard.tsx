@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Subtask, Task } from "./task";
 import SubtaskForm, { SubtaskFormData } from "./subtaskForm";
 import { SubtaskCard } from "./subtaskCard";
-import { Pencil, Trash2, SquarePlus } from "lucide-react";
+import { Pencil, Trash2, SquarePlus, Menu } from "lucide-react";
 
 interface TaskCardProps {
   task: Task;
@@ -15,11 +15,6 @@ interface TaskCardProps {
 const getCardStyles = (level: number) => {
   // Base styles for all cards
   const baseStyles = "card shadow-lg hover:shadow-xl transition-shadow";
-
-  // Additional styles for subtasks - including border styles
-  if (level > 0) {
-    return `${baseStyles} scale-95 opacity-90 border-l-4 border-l-base-300`;
-  }
 
   return `${baseStyles} border border-base-200`;
 };
@@ -40,28 +35,25 @@ export const TaskCard: React.FC<TaskCardProps> = ({
   const [isFormOpen, setIsFormOpen] = useState(false);
 
   useEffect(() => {
-    onRefresh();
+    onRefresh;
   }, [subtasks]);
 
   const fetchSubtasks = async () => {
-    if (!isExpanded) {
-      setIsLoadingSubtasks(true);
-      try {
-        const response = await fetch(
-          `http://localhost:5000/api/${task.id}/subtasks`
-        );
-        if (!response.ok) {
-          throw new Error("Failed to fetch subtasks");
-        }
-        const data = await response.json();
-        setSubtasks(data);
-      } catch (err) {
-        console.error("Error fetching subtasks:", err);
-      } finally {
-        setIsLoadingSubtasks(false);
+    setIsLoadingSubtasks(true);
+    try {
+      const response = await fetch(
+        `http://localhost:5000/api/${task.id}/subtasks`
+      );
+      if (!response.ok) {
+        throw new Error("Failed to fetch subtasks");
       }
+      const data = await response.json();
+      setSubtasks(data);
+    } catch (err) {
+      console.error("Error fetching subtasks:", err);
+    } finally {
+      setIsLoadingSubtasks(false);
     }
-    setIsExpanded(!isExpanded);
   };
 
   const getPriorityColor = (priority: Task["priority"]) => {
@@ -106,6 +98,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({
     }
     fetchSubtasks();
     onRefresh();
+    setIsExpanded(true);
   };
 
   const handleDeleteTask = async (id: string) => {
@@ -132,8 +125,12 @@ export const TaskCard: React.FC<TaskCardProps> = ({
                 <div />
               ) : (
                 <button
-                  onClick={fetchSubtasks}
-                  className="btn btn-ghost btn-sm btn-circle">
+                  onClick={() => {
+                    fetchSubtasks();
+                    setIsExpanded(!isExpanded);
+                  }}
+                  className="btn btn-ghost btn-sm btn-circle"
+                >
                   {isLoadingSubtasks ? (
                     <span className="loading loading-spinner loading-xs"></span>
                   ) : (
@@ -144,7 +141,8 @@ export const TaskCard: React.FC<TaskCardProps> = ({
                       }`}
                       fill="none"
                       viewBox="0 0 24 24"
-                      stroke="currentColor">
+                      stroke="currentColor"
+                    >
                       <path
                         strokeLinecap="round"
                         strokeLinejoin="round"
@@ -156,7 +154,8 @@ export const TaskCard: React.FC<TaskCardProps> = ({
                 </button>
               )}
               <h2
-                className={`${level > 0 ? "text-lg" : "text-xl"} font-bold  `}>
+                className={`${level > 0 ? "text-lg" : "text-xl"} font-bold  `}
+              >
                 {task.title}
               </h2>
             </div>
@@ -166,23 +165,12 @@ export const TaskCard: React.FC<TaskCardProps> = ({
               </span>
               <div className="dropdown dropdown-end z-10">
                 <label tabIndex={0} className="btn btn-ghost btn-circle btn-sm">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    strokeWidth={1.5}
-                    stroke="currentColor"
-                    className="w-5 h-5">
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M12 6.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 12.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 18.75a.75.75 0 110-1.5.75.75 0 010 1.5z"
-                    />
-                  </svg>
+                  <Menu/>
                 </label>
                 <ul
                   tabIndex={0}
-                  className="dropdown-content menu p-2 shadow bg-base-100 rounded-box ">
+                  className="dropdown-content menu p-2 shadow bg-base-100 rounded-box "
+                >
                   <div className="tooltip" data-tip="add subtask">
                     <li>
                       <button
@@ -190,7 +178,8 @@ export const TaskCard: React.FC<TaskCardProps> = ({
                           setIsFormOpen(true);
                           setEditingSubtask(undefined);
                         }}
-                        className="btn btn-ghost btn-md text-green-500">
+                        className="btn btn-ghost btn-md text-green-500"
+                      >
                         <SquarePlus className="" /> {/* Add icon */}
                       </button>
                     </li>
@@ -199,7 +188,8 @@ export const TaskCard: React.FC<TaskCardProps> = ({
                     <li>
                       <button
                         onClick={() => onEdit(task)}
-                        className="btn btn-ghost btn-md text-yellow-400">
+                        className="btn btn-ghost btn-md text-yellow-400"
+                      >
                         <Pencil /> {/* Edit icon */}
                       </button>
                     </li>
@@ -208,7 +198,8 @@ export const TaskCard: React.FC<TaskCardProps> = ({
                     <li>
                       <button
                         onClick={() => handleDeleteTask(task.id)}
-                        className="btn btn-ghost btn-md text-error">
+                        className="btn btn-ghost btn-md text-error"
+                      >
                         <Trash2 /> {/* Delete icon*/}
                       </button>
                     </li>
@@ -235,7 +226,8 @@ export const TaskCard: React.FC<TaskCardProps> = ({
               <select
                 className="select select-bordered select-sm"
                 value={task.status}
-                onChange={(e) => onStatusChange(task.id, e.target.value)}>
+                onChange={(e) => onStatusChange(task.id, e.target.value)}
+              >
                 <option value="TODO">Todo</option>
                 <option value="IN_PROGRESS">In Progress</option>
                 <option value="COMPLETED">Completed</option>
@@ -264,8 +256,8 @@ export const TaskCard: React.FC<TaskCardProps> = ({
                 level={level + 1}
                 parentId={task.id}
                 onRefresh={() => {
-                  onRefresh();
                   fetchSubtasks();
+                  onRefresh();
                 }}
                 isDone={subtask.isDone}
               />

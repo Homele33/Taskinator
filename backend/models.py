@@ -1,5 +1,6 @@
 from config import db
-from datetime import datetime
+from datetime import date
+
 class SubTask(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(100), nullable=False, unique=False)
@@ -11,7 +12,7 @@ class SubTask(db.Model):
         return {
             "id": self.id,
             "title": self.title,
-            "done": self.is_done,
+            "isDone": self.is_done,
             "description": self.description,
         }
     
@@ -28,11 +29,23 @@ class Task(db.Model):
     status = db.Column(db.Enum('TODO','IN_PROGRESS', 'COMPLETED'))
     
     def to_json(self):
+        if self.due_date:
+            return{
+                "id": self.id,
+                "title": self.title,
+                "description": self.description,
+                "isDone": self.is_done,
+                "dueDate": self.due_date.isoformat(),
+                "dueTime": self.due_time,
+                "subtasks": [sub_task.to_json() for sub_task in self.sub_tasks],
+                "status": self.status,
+                "priority": self.priority
+            }
         return {
             "id": self.id,
             "title": self.title,
             "description": self.description,
-            "done": self.is_done,
+            "isDone": self.is_done,
             "dueDate": self.due_date,
             "dueTime": self.due_time,
             "subtasks": [sub_task.to_json() for sub_task in self.sub_tasks],

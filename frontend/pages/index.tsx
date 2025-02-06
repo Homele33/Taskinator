@@ -75,6 +75,7 @@ const MainPage: React.FC = () => {
     } else {
       await handleCreateTask(taskData);
     }
+    
   };
 
   const handleEditTask = (task: Task) => {
@@ -142,6 +143,7 @@ const MainPage: React.FC = () => {
             setIsFormOpen(false);
             setEditingTask(undefined);
             setSelectedParentId(undefined);
+            
           }}
           onSubmit={handleFormSubmit}
         />
