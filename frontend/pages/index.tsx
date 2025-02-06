@@ -124,9 +124,6 @@ const MainPage: React.FC = () => {
     throw new Error("Function not implemented.");
   }
 
-  function handleDeleteTask(taskId: string): void {
-
-  }
 
   return (
     <div className="container mx-auto p-4">

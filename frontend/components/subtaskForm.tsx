@@ -1,11 +1,5 @@
-import React, {useState,useEffect} from 'react'
-
-interface Subtask{
-    id: string;
-    title: string;
-    description?: string;
-    parentId: string;
-}
+import React, {useState,useEffect} from 'react';
+import { Subtask } from "./task";
 
 export interface SubtaskFormData{
     title: string;

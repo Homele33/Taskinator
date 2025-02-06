@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
-import { Task } from "./task";
+import { Subtask, Task } from "./task";
 import SubtaskForm, {SubtaskFormData} from "./subtaskForm";
+import { SubtaskCard } from "./subtaskCard";
 
 interface TaskCardProps {
   task: Task;
@@ -29,7 +30,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({
   onDelete,
   onRefresh,
 }) => {
-  const [subtasks, setSubtasks] = useState<Task[]>([]);
+  const [subtasks, setSubtasks] = useState<Subtask[]>([]);
   const [isExpanded, setIsExpanded] = useState(false);
   const [isLoadingSubtasks, setIsLoadingSubtasks] = useState(false);
   const [editSubtask, setEditingSubtask] = useState<string | undefined>(undefined);
@@ -98,6 +99,8 @@ export const TaskCard: React.FC<TaskCardProps> = ({
     if (!response.ok){
       throw new Error("Failed to create subtask");
     }
+    fetchSubtasks()
+    setIsExpanded(true)
   }
 
   const handleDeleteTask = async (id: string) => {
@@ -244,12 +247,13 @@ export const TaskCard: React.FC<TaskCardProps> = ({
             <div key={subtask.id} className="relative">
               {/* Horizontal connecting line */}
               <div className="absolute left-4 top-1/2 w-4 h-0.5 bg-base-300" />
-              <TaskCard
-                task={subtask}
+              <SubtaskCard
+                subtask={subtask}
                 level={level + 1}
-                onStatusChange={onStatusChange}
+                parentId ={task.id}
                 onDelete={onDelete}
                 onRefresh={onRefresh}
+                isDone ={subtask.isDone}
               />
             </div>
           ))}

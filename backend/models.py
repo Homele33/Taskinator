@@ -1,4 +1,5 @@
 from config import db
+from datetime import datetime
 class SubTask(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(100), nullable=False, unique=False)
@@ -23,6 +24,8 @@ class Task(db.Model):
     due_date = db.Column(db.Date, nullable=True, unique=False)
     due_time = db.Column(db.Time, nullable=True, unique=False)
     sub_tasks = db.relationship("SubTask", backref="task", lazy=True)
+    priority = db.Column(db.Enum('LOW', 'MEDIUM', 'HIGH'))
+    status = db.Column(db.Enum('TODO','IN_PROGRESS', 'COMPLETED'))
     
     def to_json(self):
         return {
@@ -33,6 +36,8 @@ class Task(db.Model):
             "dueDate": self.due_date,
             "dueTime": self.due_time,
             "subTasks": [sub_task.to_json() for sub_task in self.sub_tasks],
+            "status": self.status,
+            "priority": self.priority
 
         }
 
