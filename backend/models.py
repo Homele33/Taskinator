@@ -35,7 +35,7 @@ class Task(db.Model):
             "done": self.is_done,
             "dueDate": self.due_date,
             "dueTime": self.due_time,
-            "subTasks": [sub_task.to_json() for sub_task in self.sub_tasks],
+            "subtasks": [sub_task.to_json() for sub_task in self.sub_tasks],
             "status": self.status,
             "priority": self.priority
 

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Task } from "./task";
+import { Task, Subtask } from "./task";
 
 interface TaskFormProps {
   task?: Task;
@@ -16,7 +16,7 @@ export interface TaskFormData {
   priority: "LOW" | "MEDIUM" | "HIGH";
   dueDate?: string;
   parent_task_id?: string;
-  subtasks: [];
+  subtasks: Subtask[];
 }
 
 const TaskForm: React.FC<TaskFormProps> = ({
@@ -47,7 +47,7 @@ const TaskForm: React.FC<TaskFormProps> = ({
         priority: task.priority,
         dueDate: task.dueDate,
         parent_task_id: parentTaskId,
-        subtasks: [],
+        subtasks: task.subtasks,
       });
     }
   }, [task, parentTaskId]);
@@ -79,15 +79,13 @@ const TaskForm: React.FC<TaskFormProps> = ({
             </h2>
             <button
               onClick={onClose}
-              className="btn btn-ghost btn-sm btn-circle"
-            >
+              className="btn btn-ghost btn-sm btn-circle">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 className="h-6 w-6"
                 fill="none"
                 viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
+                stroke="currentColor">
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -148,8 +146,7 @@ const TaskForm: React.FC<TaskFormProps> = ({
                       ...formData,
                       status: e.target.value as TaskFormData["status"],
                     })
-                  }
-                >
+                  }>
                   <option value="TODO">Todo</option>
                   <option value="IN_PROGRESS">In Progress</option>
                   <option value="COMPLETED">Completed</option>
@@ -168,8 +165,7 @@ const TaskForm: React.FC<TaskFormProps> = ({
                       ...formData,
                       priority: e.target.value as TaskFormData["priority"],
                     })
-                  }
-                >
+                  }>
                   <option value="LOW">Low</option>
                   <option value="MEDIUM">Medium</option>
                   <option value="HIGH">High</option>
@@ -197,15 +193,13 @@ const TaskForm: React.FC<TaskFormProps> = ({
                 type="button"
                 className="btn btn-ghost"
                 onClick={onClose}
-                disabled={loading}
-              >
+                disabled={loading}>
                 Cancel
               </button>
               <button
                 type="submit"
                 className={`btn btn-primary ${loading ? "loading" : ""}`}
-                disabled={loading}
-              >
+                disabled={loading}>
                 {loading ? "Saving..." : "Save Task"}
               </button>
             </div>

@@ -5,7 +5,7 @@ export interface Task {
   status: "TODO" | "IN_PROGRESS" | "COMPLETED";
   priority: "LOW" | "MEDIUM" | "HIGH";
   dueDate?: string;
-  subTasks: Array<Subtask>;
+  subtasks: Array<Subtask>;
 }
 
 export interface Subtask {

@@ -1,31 +1,32 @@
-import React, { useEffect, useState } from "react";
 import { Subtask } from "./task";
+import { Pencil, Trash2 } from "lucide-react";
 
 interface SubtaskCardProps {
   subtask: Subtask;
   level?: number;
   parentId: string;
   isDone: boolean;
-  onDelete: (subtaskId: string) => void;
   onRefresh: () => void;
 }
 
-const getCardStyles = () => {
-  const baseStyles = "card shadow-lg hover:shadow-xl transition-shadow";
-
-  return `${baseStyles} scale-90 opacity-90 border-l-4 border-l-base-300`;
+const getCardStyles = (isDone: boolean) => {
+  const className =
+    "border-base-100 card hadow-lg hover:shadow-xl transition-shadow scale-90 opacity-90";
+  if (!isDone) {
+    return `${className}   border-l-4 bg-base-300 `;
+  }
+  return `${className} `;
 };
 
 export const SubtaskCard: React.FC<SubtaskCardProps> = ({
   subtask,
   level = 1,
-  onDelete,
   onRefresh,
-  isDone = false,
+  parentId,
 }) => {
   const handleDeleteSubtask = async (id: string) => {
     const response = await fetch(
-      `http://localgost:5000/api/${subtask.parentId}/${id}/delete_subtask`,
+      `http://localhost:5000/api/${parentId}/${id}/delete_subtask`,
       {
         method: "DELETE",
       }
@@ -38,64 +39,45 @@ export const SubtaskCard: React.FC<SubtaskCardProps> = ({
   };
 
   const handleEditSubtask = async (subtask: Subtask) => {
-    throw new Error("Function not implemented.");
+    throw new Error(`Function not implemented. subtask ${subtask.title}`);
   };
 
   return (
     <div className={`ml-${level * 12}`}>
-      <div className={`${getCardStyles}`}>
+      <div className={`${getCardStyles(subtask.isDone)}`}>
         <div className="card-body">
           <div className="flex justify-between items-start">
             <div className="flex items-center gap-2">
               <h2 className="text-lg font-bold">{subtask.title}</h2>
-              
             </div>
-            
-            <div className="flex gap-2">
-                
-              <div className="dropdown dropdown-end">
-                
-                <label tabIndex={0} className="btn btn-ghost btn-circle btn-sm">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    strokeWidth={1.5}
-                    stroke="currentColor"
-                    className="w-5 h-5"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M12 6.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 12.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 18.75a.75.75 0 110-1.5.75.75 0 010 1.5z"
-                    />
-                  </svg>
-                </label>
-                <ul
-                  tabIndex={0}
-                  className="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-52"
-                >
+
+            <div className="flex">
+              <ul tabIndex={0} className=" p-2 shadow">
+                <li>
+                  <div className="tooltip" data-tip="Edit subtask">
+                    <button
+                      onClick={() => handleEditSubtask(subtask)}
+                      className="btn btn-ghost btn-md text-yellow-400 p-2">
+                      <Pencil /> {/* Edit icon */}
+                    </button>
+                  </div>
+                </li>
+                <div className="tooltip" data-tip="Delete">
                   <li>
-                    <button onClick={() => handleEditSubtask(subtask)}>
-                      Edit
+                    <button
+                      onClick={() => handleDeleteSubtask(subtask.id)}
+                      className="btn btn-ghost btn-md text-error p-2 ">
+                      <Trash2 /> {/*Delete Icon */}
                     </button>
                   </li>
-                  <li>
-                    <button onClick={() => handleDeleteSubtask(subtask.id)}>
-                      Delete
-                    </button>
-                  </li>
-                </ul>
-                
-              </div>
-              
+                </div>
+              </ul>
             </div>
-            
           </div>
           <p className="text-gray-600">{subtask.description}</p>
+          <p className="text-gray-600">{subtask.parentId}</p>
         </div>
       </div>
-      
     </div>
   );
 };

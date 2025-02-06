@@ -51,13 +51,16 @@ const MainPage: React.FC = () => {
   };
 
   const handleUpdateTask = async (taskId: string, taskData: TaskFormData) => {
-    const response = await fetch(`http://localhost:5000/api/${taskId}/tasks`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(taskData),
-    });
+    const response = await fetch(
+      `http://localhost:5000/api/${taskId}/update_task`,
+      {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(taskData),
+      }
+    );
 
     if (!response.ok) {
       throw new Error("Failed to update task");
@@ -72,12 +75,6 @@ const MainPage: React.FC = () => {
     } else {
       await handleCreateTask(taskData);
     }
-  };
-
-  const handleAddSubtask = (parentId: string) => {
-    setSelectedParentId(parentId);
-    setEditingTask(undefined);
-    setIsFormOpen(true);
   };
 
   const handleEditTask = (task: Task) => {
@@ -102,8 +99,7 @@ const MainPage: React.FC = () => {
             xmlns="http://www.w3.org/2000/svg"
             className="stroke-current shrink-0 h-6 w-6"
             fill="none"
-            viewBox="0 0 24 24"
-          >
+            viewBox="0 0 24 24">
             <path
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -121,9 +117,8 @@ const MainPage: React.FC = () => {
   }
 
   function handleStatusChange(taskId: string, newStatus: string): void {
-    throw new Error("Function not implemented.");
+    throw new Error(`Function not implemented. ${taskId} ${newStatus}`);
   }
-
 
   return (
     <div className="container mx-auto p-4">
@@ -135,8 +130,7 @@ const MainPage: React.FC = () => {
             setEditingTask(undefined);
             setSelectedParentId(undefined);
             setIsFormOpen(true);
-          }}
-        >
+          }}>
           Add New Task
         </button>
 
@@ -166,8 +160,8 @@ const MainPage: React.FC = () => {
               key={task.id}
               task={task}
               onStatusChange={handleStatusChange}
-              onDelete={() => fetchTasks()}
               onRefresh={fetchTasks}
+              onEdit={handleEditTask}
             />
           ))}
         </div>
