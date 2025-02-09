@@ -15,8 +15,6 @@ export interface TaskFormData {
   status: "TODO" | "IN_PROGRESS" | "COMPLETED";
   priority: "LOW" | "MEDIUM" | "HIGH";
   dueDate?: string;
-  parent_task_id?: string;
-  subtasks: Subtask[];
 }
 
 const TaskForm: React.FC<TaskFormProps> = ({
@@ -26,15 +24,14 @@ const TaskForm: React.FC<TaskFormProps> = ({
   onClose,
   onSubmit,
 }) => {
-  const [formData, setFormData] = useState<TaskFormData>({
+  const defaultData: TaskFormData = {
     title: "",
     description: "",
     status: "TODO",
     priority: "MEDIUM",
     dueDate: undefined,
-    parent_task_id: parentTaskId,
-    subtasks: [],
-  });
+  };
+  const [formData, setFormData] = useState<TaskFormData>(defaultData);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -46,8 +43,6 @@ const TaskForm: React.FC<TaskFormProps> = ({
         status: task.status,
         priority: task.priority,
         dueDate: task.dueDate,
-        parent_task_id: parentTaskId,
-        subtasks: task.subtasks,
       });
     }
   }, [task, parentTaskId]);
@@ -59,22 +54,12 @@ const TaskForm: React.FC<TaskFormProps> = ({
 
     try {
       await onSubmit(formData);
-      
-      setFormData({
-        title: "",
-        description: "",
-        status: "TODO",
-        priority: "MEDIUM",
-        dueDate: "",
-        parent_task_id: parentTaskId,
-        subtasks: [],
-      })
       onClose();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to save task");
     } finally {
       setLoading(false);
-      
+      setFormData(defaultData);
     }
   };
 
@@ -109,7 +94,7 @@ const TaskForm: React.FC<TaskFormProps> = ({
             </button>
           </div>
 
-          <form onSubmit={handleSubmit}  className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-4">
             {error && (
               <div className="alert alert-error">
                 <span>{error}</span>

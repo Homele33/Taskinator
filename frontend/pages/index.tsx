@@ -9,9 +9,6 @@ const MainPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | undefined>(undefined);
-  const [selectedParentId, setSelectedParentId] = useState<string | undefined>(
-    undefined
-  );
 
   useEffect(() => {
     fetchTasks();
@@ -75,12 +72,10 @@ const MainPage: React.FC = () => {
     } else {
       await handleCreateTask(taskData);
     }
-    
   };
 
   const handleEditTask = (task: Task) => {
     setEditingTask(task);
-    setSelectedParentId(undefined);
     setIsFormOpen(true);
   };
 
@@ -100,7 +95,8 @@ const MainPage: React.FC = () => {
             xmlns="http://www.w3.org/2000/svg"
             className="stroke-current shrink-0 h-6 w-6"
             fill="none"
-            viewBox="0 0 24 24">
+            viewBox="0 0 24 24"
+          >
             <path
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -129,21 +125,18 @@ const MainPage: React.FC = () => {
           className="btn btn-primary"
           onClick={() => {
             setEditingTask(undefined);
-            setSelectedParentId(undefined);
             setIsFormOpen(true);
-          }}>
+          }}
+        >
           Add New Task
         </button>
 
         <TaskForm
           task={editingTask}
-          parentTaskId={selectedParentId}
           isOpen={isFormOpen}
           onClose={() => {
             setIsFormOpen(false);
             setEditingTask(undefined);
-            setSelectedParentId(undefined);
-            
           }}
           onSubmit={handleFormSubmit}
         />

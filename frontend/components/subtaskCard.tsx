@@ -51,6 +51,7 @@ export const SubtaskCard: React.FC<SubtaskCardProps> = ({
     if(!response.ok){
       throw new Error("Failed to toggle subtask");
     }
+    onRefresh();
   };
 
   return (
@@ -66,7 +67,7 @@ export const SubtaskCard: React.FC<SubtaskCardProps> = ({
               <div className="tooltip" data-tip="Complete">
                 <button
                   onClick={() => handleComplete(subtask.id)}
-                  className="btn btn-ghost btn-md text-green-500"
+                  className={`btn btn-ghost btn-md ${subtask.isDone? "text-error" : "text-green-500"}`}
                 >
                   <Check />
                 </button>

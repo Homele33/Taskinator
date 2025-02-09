@@ -97,7 +97,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({
       throw new Error("Failed to create subtask");
     }
     fetchSubtasks();
-    onRefresh();
+    
     setIsExpanded(true);
   };
 
@@ -257,7 +257,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({
                 parentId={task.id}
                 onRefresh={() => {
                   fetchSubtasks();
-                  onRefresh();
+                  
                 }}
                 isDone={subtask.isDone}
               />
