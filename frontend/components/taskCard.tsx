@@ -2,12 +2,11 @@ import React, { useState, useEffect } from "react";
 import { Subtask, Task } from "./task";
 import SubtaskForm, { SubtaskFormData } from "./subtaskForm";
 import { SubtaskCard } from "./subtaskCard";
-import { Pencil, Trash2, SquarePlus, Menu } from "lucide-react";
+import { Pencil, Trash2, SquarePlus, Menu, Bot } from "lucide-react";
 
 interface TaskCardProps {
   task: Task;
   level?: number;
-  onStatusChange: (taskId: string, newStatus: string) => void;
   onRefresh: () => void;
   onEdit: (task: Task) => void;
 }
@@ -22,7 +21,6 @@ const getCardStyles = (level: number) => {
 export const TaskCard: React.FC<TaskCardProps> = ({
   task,
   level = 0,
-  onStatusChange,
   onRefresh,
   onEdit,
 }) => {
@@ -112,16 +110,32 @@ export const TaskCard: React.FC<TaskCardProps> = ({
     onRefresh();
   };
 
-  const handleStatusChange = async(id: string, newStatus: string) => {
-    const response = await fetch(`http://localhost:5000/api/tasks/status/${id}?status=${newStatus}`, {
-      method: "PATCH"
-    })
+  const handleStatusChange = async (id: string, newStatus: string) => {
+    const response = await fetch(
+      `http://localhost:5000/api/tasks/status/${id}?status=${newStatus}`,
+      {
+        method: "PATCH",
+      }
+    );
 
-    if(!response.ok){
+    if (!response.ok) {
       throw new Error("Failed to change status");
     }
     onRefresh();
-  }
+  };
+
+  const handleTaskBreaker = async (id: string) => {
+    const response = await fetch(
+      `http://localhost:5000/api/task-breaker/${id}`,
+      {
+        method: "GET",
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(`Failed to break task`);
+    }
+  };
 
   return (
     <div className={`ml-${level * 12}`}>
@@ -171,14 +185,32 @@ export const TaskCard: React.FC<TaskCardProps> = ({
               <span className={`badge ${getPriorityColor(task.priority)}`}>
                 {task.priority}
               </span>
-              <div className="dropdown dropdown-end z-10">
-                <label tabIndex={0} className="btn btn-ghost btn-circle btn-sm">
-                  <Menu />
-                </label>
+              <div className="dropdown-end dropdown">
+                <div>
+                  <label
+                    tabIndex={0}
+                    className="btn btn-ghost btn-circle btn-sm "
+                  >
+                    <Menu />
+                  </label>
+                </div>
+
                 <ul
                   tabIndex={0}
-                  className="dropdown-content menu p-2 shadow bg-base-100 rounded-box "
+                  className="dropdown-content menu p-2 shadow bg-base-100 rounded-box z-20"
                 >
+                  <div className="tooltip" data-tip="Break task down">
+                    <li>
+                      <button
+                        onClick={() => {
+                          handleTaskBreaker(task.id);
+                        }}
+                        className="btn btn-ghost btn-md text-purple-600"
+                      >
+                        <Bot /> {/* Task beaker*/}
+                      </button>
+                    </li>
+                  </div>
                   <div className="tooltip" data-tip="add subtask">
                     <li>
                       <button
@@ -188,7 +220,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({
                         }}
                         className="btn btn-ghost btn-md text-green-500"
                       >
-                        <SquarePlus className="" /> {/* Add icon */}
+                        <SquarePlus className="" /> {/* Add subtask icon */}
                       </button>
                     </li>
                   </div>

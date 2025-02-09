@@ -83,26 +83,27 @@ export const SubtaskCard: React.FC<SubtaskCardProps> = ({
                   tabIndex={0}
                   className=" p-2 shadow dropdown-content menu bg-base-100 rounded-box"
                 >
-                  <li>
-                    <div className="tooltip" data-tip="Edit subtask">
+                  <div className="tooltip" data-tip="Edit subtask">
+                    <li>
                       <button
                         onClick={() => handleEditSubtask(subtask)}
                         className="btn btn-ghost btn-md text-yellow-400"
                       >
                         <Pencil /> {/* Edit icon */}
                       </button>
-                    </div>
-                  </li>
-                  <li>
-                    <div className="tooltip" data-tip="Delete">
+                    </li>
+                  </div>
+
+                  <div className="tooltip" data-tip="Delete">
+                    <li>
                       <button
                         onClick={() => handleDeleteSubtask(subtask.id)}
                         className="btn btn-ghost btn-md text-error"
                       >
                         <Trash2 /> {/*Delete Icon */}
                       </button>
-                    </div>
-                  </li>
+                    </li>
+                  </div>
                 </ul>
               </div>
             </div>

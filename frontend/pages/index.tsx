@@ -113,10 +113,6 @@ const MainPage: React.FC = () => {
     );
   }
 
-  function handleStatusChange(taskId: string, newStatus: string): void {
-    throw new Error(`Function not implemented. ${taskId} ${newStatus}`);
-  }
-
   return (
     <div className="container mx-auto p-4">
       <div className="flex justify-between items-center mb-6">
@@ -154,7 +150,6 @@ const MainPage: React.FC = () => {
             <TaskCard
               key={task.id}
               task={task}
-              onStatusChange={handleStatusChange}
               onRefresh={fetchTasks}
               onEdit={handleEditTask}
             />
