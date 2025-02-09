@@ -12,21 +12,7 @@ def get_tasks():
     json_tasks = list(map(lambda x: x.to_json(), tasks))
     return jsonify({"tasks": json_tasks})
 
-@app.route("/api/<int:task_id>/task", methods=["GET"]) # get a single task
-def get_task(task_id):
-    task = Task.query.get(task_id)
-
-    if not task:
-        return jsonify({"message": "Task not found"}), 404
-    
-    return jsonify(task.to_json())
-
-@app.route("/api/<int:task_id>/subtasks", methods=["GET"]) # get all subtasks of a task
-def get_subtasks(task_id):
-    task = Task.query.get(task_id)
-    return jsonify([sub_task.to_json() for sub_task in task.sub_tasks])
-
-@app.route("/api/create_task", methods=["POST"]) # create a task
+@app.route("/api/tasks", methods=["POST"]) # create a task
 def create_task():
     title = request.json.get("title")
     description = request.json.get("description")
@@ -59,20 +45,7 @@ def create_task():
     # return success message
     return jsonify({"message": "Task created!"}), 201
 
-@app.route("/api/<int:task_id>/add_subtask",methods=["POST"]) # add a subtask to a task
-def add_subtask(task_id):
-    task = Task.query.get(task_id)
-
-    if not task:
-        return jsonify({"message": "Task not found"}), 404
-
-    data = request.json
-    sub_task = SubTask(title=data.get("title"), description=data.get("description"))
-    task.add_sub_task(sub_task)
-
-    return jsonify({"message": "Subtask added"}), 201
-
-@app.route("/api/<int:task_id>/update_task", methods=["PATCH"]) # update a task
+@app.route("/api/tasks/<int:task_id>", methods=["PATCH"]) # update a task
 def update_task(task_id):
     task = Task.query.get(task_id)
 
@@ -93,7 +66,7 @@ def update_task(task_id):
 
     return jsonify({"message": "Task updated"}), 200
 
-@app.route("/api/<int:task_id>/delete_task", methods=["DELETE"]) # delete a task
+@app.route("/api/tasks/<int:task_id>", methods=["DELETE"]) # delete a task
 def delete_task(task_id):
     task = Task.query.get(task_id)
     
@@ -108,7 +81,34 @@ def delete_task(task_id):
 
     return jsonify({"message": "Task deleted"}), 200
 
-@app.route("/api/<int:task_id>/<int:subtask_id>/delete_subtask", methods=["DELETE"]) # delete a subtask
+@app.route("/api/tasks/<int:task_id>", methods=["GET"]) # get a single task
+def get_task(task_id):
+    task = Task.query.get(task_id)
+
+    if not task:
+        return jsonify({"message": "Task not found"}), 404
+    
+    return jsonify(task.to_json())
+
+@app.route("/api/tasks/subtasks/<int:task_id>", methods=["GET"]) # get all subtasks of a task
+def get_subtasks(task_id):
+    task = Task.query.get(task_id)
+    return jsonify([sub_task.to_json() for sub_task in task.sub_tasks])
+
+@app.route("/api/tasks/subtasks/<int:task_id>",methods=["POST"]) # add a subtask to a task
+def add_subtask(task_id):
+    task = Task.query.get(task_id)
+
+    if not task:
+        return jsonify({"message": "Task not found"}), 404
+
+    data = request.json
+    sub_task = SubTask(title=data.get("title"), description=data.get("description"))
+    task.add_sub_task(sub_task)
+
+    return jsonify({"message": "Subtask added"}), 201
+
+@app.route("/api/tasks/subtasks/<int:task_id>/<int:subtask_id>", methods=["DELETE"]) # delete a subtask
 def delete_subtask(task_id, subtask_id):
     task = Task.query.get(task_id)
     subtask = SubTask.query.get(subtask_id)
@@ -121,19 +121,7 @@ def delete_subtask(task_id, subtask_id):
 
     return jsonify({"message": "Subtask deleted"}), 200
 
-@app.route("/api/<int:task_id>/toggle_task", methods=["PATCH"]) # toggle a task
-def toggle_task(task_id):
-    task = Task.query.get(task_id)
-    
-    if not task:
-        return jsonify({"message": "Task not found"}), 404
-
-    task.is_done = not task.is_done
-    db.session.commit()
-
-    return jsonify({"message": "Task toggled"}), 200
-
-@app.route("/api/<int:task_id>/<int:subtask_id>/toggle_subtask", methods=["PATCH"]) # toggle a subtask
+@app.route("/api/tasks/subtasks/<int:task_id>/<int:subtask_id>", methods=["PATCH"]) # toggle a subtask
 def toggle_subtask(task_id, subtask_id):
     task = Task.query.get(task_id)
     subtask = SubTask.query.get(subtask_id)
@@ -146,7 +134,19 @@ def toggle_subtask(task_id, subtask_id):
 
     return jsonify({"message": "Subtask toggled"}), 200
 
-@app.route("/api/breakdown_task/<int:task_id>", methods=["GET"])
+@app.route("/api/tasks/status/<int:task_id>", methods=["PATCH"]) # change task status
+def toggle_task(task_id):
+    task = Task.query.get(task_id)
+    status = request.args.get('status')
+    if not task:
+        return jsonify({"message": "Task not found"}), 404
+
+    task.status = status
+    db.session.commit()
+
+    return jsonify({"message": "Task status changed"}), 200
+
+@app.route("/api/task-breaker/<int:task_id>", methods=["GET"]) # beak down the task into subtasks using LLM
 def breakdown_task(task_id):
     task: Task = Task.query.get(task_id)
 

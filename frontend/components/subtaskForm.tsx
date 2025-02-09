@@ -62,7 +62,7 @@ const SubtaskForm: React.FC<SubtaskFormProps> = ({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       <div className="absolute inset-0 bg-black/50" onClick={onClose} />
-      <div className="relative rounded-lg shadow-xl w-96 p-6">
+      <div className="relative rounded-lg shadow-xl w-96 p-6 bg-base-100">
         <h3 className="text-lg font-semibold mb-4">
           {subtask ? "Edit Subtask" : "Add Subtask"}
         </h3>
@@ -74,7 +74,7 @@ const SubtaskForm: React.FC<SubtaskFormProps> = ({
                 type="text"
                 name="title"
                 defaultValue={subtask?.title}
-                className="w-full border rounded-md px-3 py-2"
+                className="w-full border rounded-md px-3 py-2 bg-base-200"
                 value={formData.title}
                 onChange={(e) =>
                   setFormData({ ...formData, title: e.target.value })
@@ -93,7 +93,7 @@ const SubtaskForm: React.FC<SubtaskFormProps> = ({
                 onChange={(e) =>
                   setFormData({ ...formData, description: e.target.value })
                 }
-                className="w-full border rounded-md px-3 py-2"
+                className="w-full border rounded-md px-3 py-2 bg-base-200"
                 rows={3}
               />
             </div>

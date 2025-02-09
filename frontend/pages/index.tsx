@@ -32,7 +32,7 @@ const MainPage: React.FC = () => {
   };
 
   const handleCreateTask = async (taskData: TaskFormData) => {
-    const response = await fetch("http://localhost:5000/api/create_task", {
+    const response = await fetch("http://localhost:5000/api/tasks", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -49,7 +49,7 @@ const MainPage: React.FC = () => {
 
   const handleUpdateTask = async (taskId: string, taskData: TaskFormData) => {
     const response = await fetch(
-      `http://localhost:5000/api/${taskId}/update_task`,
+      `http://localhost:5000/api/tasks/${taskId}`,
       {
         method: "PATCH",
         headers: {

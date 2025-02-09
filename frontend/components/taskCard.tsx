@@ -42,7 +42,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({
     setIsLoadingSubtasks(true);
     try {
       const response = await fetch(
-        `http://localhost:5000/api/${task.id}/subtasks`
+        `http://localhost:5000/api/tasks/subtasks/${task.id}`
       );
       if (!response.ok) {
         throw new Error("Failed to fetch subtasks");
@@ -84,7 +84,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({
 
   const handleAddSubtask = async (subtask: SubtaskFormData) => {
     const response = await fetch(
-      `http://localhost:5000/api/${subtask.parentId}/add_subtask`,
+      `http://localhost:5000/api/tasks/subtasks/${subtask.parentId}`,
       {
         method: "POST",
         headers: {
@@ -97,23 +97,31 @@ export const TaskCard: React.FC<TaskCardProps> = ({
       throw new Error("Failed to create subtask");
     }
     fetchSubtasks();
-    
+
     setIsExpanded(true);
   };
 
   const handleDeleteTask = async (id: string) => {
-    const response = await fetch(
-      `http://localhost:5000/api/${id}/delete_task`,
-      {
-        method: "DELETE",
-      }
-    );
+    const response = await fetch(`http://localhost:5000/api/tasks/${id}`, {
+      method: "DELETE",
+    });
 
     if (!response.ok) {
       throw new Error("Failed to delete task");
     }
     onRefresh();
   };
+
+  const handleStatusChange = async(id: string, newStatus: string) => {
+    const response = await fetch(`http://localhost:5000/api/tasks/status/${id}?status=${newStatus}`, {
+      method: "PATCH"
+    })
+
+    if(!response.ok){
+      throw new Error("Failed to change status");
+    }
+    onRefresh();
+  }
 
   return (
     <div className={`ml-${level * 12}`}>
@@ -165,7 +173,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({
               </span>
               <div className="dropdown dropdown-end z-10">
                 <label tabIndex={0} className="btn btn-ghost btn-circle btn-sm">
-                  <Menu/>
+                  <Menu />
                 </label>
                 <ul
                   tabIndex={0}
@@ -226,7 +234,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({
               <select
                 className="select select-bordered select-sm"
                 value={task.status}
-                onChange={(e) => onStatusChange(task.id, e.target.value)}
+                onChange={(e) => handleStatusChange(task.id, e.target.value)}
               >
                 <option value="TODO">Todo</option>
                 <option value="IN_PROGRESS">In Progress</option>
@@ -257,7 +265,6 @@ export const TaskCard: React.FC<TaskCardProps> = ({
                 parentId={task.id}
                 onRefresh={() => {
                   fetchSubtasks();
-                  
                 }}
                 isDone={subtask.isDone}
               />

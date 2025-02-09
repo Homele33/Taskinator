@@ -26,7 +26,7 @@ export const SubtaskCard: React.FC<SubtaskCardProps> = ({
 }) => {
   const handleDeleteSubtask = async (id: string) => {
     const response = await fetch(
-      `http://localhost:5000/api/${parentId}/${id}/delete_subtask`,
+      `http://localhost:5000/api/tasks/subtasks/${parentId}/${id}`,
       {
         method: "DELETE",
       }
@@ -42,13 +42,14 @@ export const SubtaskCard: React.FC<SubtaskCardProps> = ({
     throw new Error(`Function not implemented. subtask ${subtask.title}`);
   };
 
-  const handleComplete = async (id :string) => {
-    const response = await fetch(`http://localhost:5000/api/${parentId}/${subtask.id}/toggle_subtask`, 
-    {
-      method: "PATCH",
-    }
+  const handleComplete = async (id: string) => {
+    const response = await fetch(
+      `http://localhost:5000/api/${parentId}/${subtask.id}/toggle_subtask`,
+      {
+        method: "PATCH",
+      }
     );
-    if(!response.ok){
+    if (!response.ok) {
       throw new Error("Failed to toggle subtask");
     }
     onRefresh();
@@ -67,12 +68,14 @@ export const SubtaskCard: React.FC<SubtaskCardProps> = ({
               <div className="tooltip" data-tip="Complete">
                 <button
                   onClick={() => handleComplete(subtask.id)}
-                  className={`btn btn-ghost btn-md ${subtask.isDone? "text-error" : "text-green-500"}`}
+                  className={`btn btn-ghost btn-md ${
+                    subtask.isDone ? "text-error" : "text-green-500"
+                  }`}
                 >
                   <Check />
                 </button>
               </div>
-              <div className="dropdown dropdown-end z-10">
+              <div className="dropdown dropdown-top z-100">
                 <label tabIndex={0}>
                   <Menu />
                 </label>
@@ -90,16 +93,16 @@ export const SubtaskCard: React.FC<SubtaskCardProps> = ({
                       </button>
                     </div>
                   </li>
-                  <div className="tooltip" data-tip="Delete">
-                    <li>
+                  <li>
+                    <div className="tooltip" data-tip="Delete">
                       <button
                         onClick={() => handleDeleteSubtask(subtask.id)}
                         className="btn btn-ghost btn-md text-error"
                       >
                         <Trash2 /> {/*Delete Icon */}
                       </button>
-                    </li>
-                  </div>
+                    </div>
+                  </li>
                 </ul>
               </div>
             </div>
