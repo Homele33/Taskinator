@@ -3,6 +3,8 @@ from config import app, db
 from models import Task, SubTask
 from datetime import date
 from sqlalchemy.sql import null
+from Ai.taskBreakdown import main as breakdown
+
 
 @app.route("/api/tasks", methods=["GET"])# get all tasks
 def get_tasks():
@@ -143,6 +145,19 @@ def toggle_subtask(task_id, subtask_id):
     db.session.commit()
 
     return jsonify({"message": "Subtask toggled"}), 200
+
+@app.route("/api/breakdown_task/<int:task_id>", methods=["GET"])
+def breakdown_task(task_id):
+    task: Task = Task.query.get(task_id)
+
+    if not task: 
+        return jsonify({"message": "Task not found"})
+    
+    task_break_down, critical_path = breakdown(task.title)
+
+    return jsonify({"message": task_break_down,
+                    "critical_path": critical_path})
+    
 
 if __name__ == "__main__":
     with app.app_context():
