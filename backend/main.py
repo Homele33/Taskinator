@@ -43,7 +43,8 @@ def create_task():
     except Exception as e:
         return jsonify({"message": str(e)}), 400
     # return success message
-    return jsonify({"message": "Task created!"}), 201
+    return jsonify({"message": "Task created!",
+                    "id": new_task.id}), 201
 
 @app.route("/api/tasks/<int:task_id>", methods=["PATCH"]) # update a task
 def update_task(task_id):
@@ -162,5 +163,5 @@ def breakdown_task(task_id):
 if __name__ == "__main__":
     with app.app_context():
         db.create_all()
-
+        
     app.run(debug=True)
