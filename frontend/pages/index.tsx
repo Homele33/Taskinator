@@ -10,13 +10,15 @@ const MainPage: React.FC = () => {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | undefined>(undefined);
 
+  const apiURL = process.env.NODE_ENV;
   useEffect(() => {
     fetchTasks();
   }, []);
 
   const fetchTasks = async () => {
     try {
-      const response = await fetch("http://localhost:5000/api/tasks");
+      console.log("API URL:", apiURL);
+      const response = await fetch(`http://localhost:5000/api/tasks`);
       if (!response.ok) {
         throw new Error("Failed to fetch tasks");
       }
@@ -48,16 +50,13 @@ const MainPage: React.FC = () => {
   };
 
   const handleUpdateTask = async (taskId: string, taskData: TaskFormData) => {
-    const response = await fetch(
-      `http://localhost:5000/api/tasks/${taskId}`,
-      {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(taskData),
-      }
-    );
+    const response = await fetch(`http://localhost:5000/api/tasks/${taskId}`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(taskData),
+    });
 
     if (!response.ok) {
       throw new Error("Failed to update task");
@@ -117,6 +116,7 @@ const MainPage: React.FC = () => {
     <div className="container mx-auto p-4">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Tasks</h1>
+
         <button
           className="btn btn-primary"
           onClick={() => {

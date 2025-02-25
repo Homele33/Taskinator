@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Subtask, Task } from "./task";
 import SubtaskForm, { SubtaskFormData } from "./subtaskForm";
 import { SubtaskCard } from "./subtaskCard";
-import { Pencil, Trash2, SquarePlus, Menu, Bot } from "lucide-react";
+import { Pencil, Trash2, SquarePlus, EllipsisVertical, Bot } from "lucide-react";
 
 interface TaskCardProps {
   task: Task;
@@ -191,7 +191,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({
                     tabIndex={0}
                     className="btn btn-ghost btn-circle btn-sm "
                   >
-                    <Menu />
+                    <EllipsisVertical />
                   </label>
                 </div>
 
