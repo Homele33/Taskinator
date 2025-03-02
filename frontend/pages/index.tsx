@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import TaskForm, { TaskFormData } from "@/components/taskForm";
 import { Task } from "@/components/task";
 import { TaskCard } from "@/components/taskCard";
+import { fetchTasks } from "@/utils/taskUtils";
 
 const MainPage: React.FC = () => {
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -12,17 +13,12 @@ const MainPage: React.FC = () => {
 
   const apiURL = process.env.NODE_ENV;
   useEffect(() => {
-    fetchTasks();
+    getTasks();
   }, []);
 
-  const fetchTasks = async () => {
+  const getTasks = async () => {
     try {
-      console.log("API URL:", apiURL);
-      const response = await fetch(`http://localhost:5000/api/tasks`);
-      if (!response.ok) {
-        throw new Error("Failed to fetch tasks");
-      }
-      const data = await response.json();
+      const data = await fetchTasks();
       setTasks(data.tasks);
       setError(null);
     } catch (err) {
@@ -46,7 +42,7 @@ const MainPage: React.FC = () => {
       throw new Error("Failed to create task");
     }
 
-    fetchTasks();
+    getTasks();
   };
 
   const handleUpdateTask = async (taskId: string, taskData: TaskFormData) => {
@@ -62,7 +58,7 @@ const MainPage: React.FC = () => {
       throw new Error("Failed to update task");
     }
 
-    fetchTasks();
+    getTasks();
   };
 
   const handleFormSubmit = async (taskData: TaskFormData) => {
@@ -104,7 +100,7 @@ const MainPage: React.FC = () => {
             />
           </svg>
           <span>{error}</span>
-          <button className="btn btn-sm" onClick={fetchTasks}>
+          <button className="btn btn-sm" onClick={getTasks}>
             Retry
           </button>
         </div>
@@ -150,7 +146,7 @@ const MainPage: React.FC = () => {
             <TaskCard
               key={task.id}
               task={task}
-              onRefresh={fetchTasks}
+              onRefresh={getTasks}
               onEdit={handleEditTask}
             />
           ))}
