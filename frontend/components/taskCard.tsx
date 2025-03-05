@@ -70,11 +70,11 @@ export const TaskCard: React.FC<TaskCardProps> = ({
   const getStatusColor = (status: Task["status"]) => {
     switch (status) {
       case "TODO":
-        return "bg-base-200";
+        return "bg-base-100";
       case "IN_PROGRESS":
-        return "bg-blue-950";
+        return "bg-info-content	";
       case "COMPLETED":
-        return "bg-emerald-950";
+        return "bg-success-content";
       default:
         return "bg-base-200";
     }
@@ -139,7 +139,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({
 
   return (
     <div className={`ml-${level * 12}`}>
-      <div className={`${getCardStyles(level)} ${getStatusColor(task.status)}`}>
+      <div className={`card ${getCardStyles(level)} ${getStatusColor(task.status)} glass`}>
         <div className="card-body">
           <div className="flex justify-between items-start">
             <div className="flex items-center gap-2">
@@ -176,7 +176,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({
                 </button>
               )}
               <h2
-                className={`${level > 0 ? "text-lg" : "text-xl"} font-bold  `}
+                className={`${level > 0 ? "text-lg" : "text-xl"} font-bold  text-primary`}
               >
                 {task.title}
               </h2>
@@ -185,7 +185,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({
               <span className={`badge ${getPriorityColor(task.priority)}`}>
                 {task.priority}
               </span>
-              <div className="dropdown-end dropdown">
+              <div className="dropdown ">
                 <div>
                   <label
                     tabIndex={0}
@@ -259,7 +259,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({
             </div>
           </div>
 
-          <p className="text-gray-600">{task.description}</p>
+          <p className="text-accent">{task.description}</p>
 
           <div className="flex justify-between items-center mt-4">
             <div className="flex items-center gap-2">
@@ -274,7 +274,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({
               </select>
             </div>
             {task.dueDate && (
-              <div className="text-sm text-gray-500">
+              <div className="text-sm text-accent">
                 Due: {new Date(task.dueDate).toDateString()}
               </div>
             )}
@@ -283,14 +283,10 @@ export const TaskCard: React.FC<TaskCardProps> = ({
       </div>
 
       {isExpanded && subtasks.length > 0 && (
-        <div className="mt-2 space-y-2 relative">
-          {/* Vertical connecting line */}
-          <div className="absolute left-4 top-0 bottom-0 w-0.5 bg-base-300" />
-
+        <div className="mt-2 space-y-2">
+         
           {subtasks.map((subtask) => (
-            <div key={subtask.id} className="relative">
-              {/* Horizontal connecting line */}
-              <div className="absolute left-4 top-1/2 w-4 h-0.5 bg-base-300" />
+            <div key={subtask.id} className=" ">
               <SubtaskCard
                 subtask={subtask}
                 level={level + 1}

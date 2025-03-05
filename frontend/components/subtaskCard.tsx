@@ -11,9 +11,9 @@ interface SubtaskCardProps {
 
 const getCardStyles = (isDone: boolean) => {
   const className =
-    "border-base-100 card hover:shadow-xl transition-shadow scale-90 opacity-90";
+    "card hover:shadow-xl  scale-90 opacity-90";
   if (!isDone) {
-    return `${className}   border-l-4 bg-base-300 `;
+    return `${className}  bg-primary `;
   }
   return `${className} bg-green-900 `;
 };
@@ -56,7 +56,7 @@ export const SubtaskCard: React.FC<SubtaskCardProps> = ({
   };
 
   return (
-    <div className={`ml-${level * 10}`}>
+    <div >
       <div className={`${getCardStyles(subtask.isDone)}`}>
         <div className="card-body">
           <div className="flex justify-between items-start">
