@@ -15,7 +15,7 @@ const getCardStyles = (level: number) => {
   // Base styles for all cards
   const baseStyles = "card shadow-lg hover:shadow-xl transition-shadow";
 
-  return `${baseStyles} border border-base-200`;
+  return `${baseStyles} `;
 };
 
 export const TaskCard: React.FC<TaskCardProps> = ({
@@ -70,7 +70,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({
   const getStatusColor = (status: Task["status"]) => {
     switch (status) {
       case "TODO":
-        return "bg-base-100";
+        return "bg-primary-content";
       case "IN_PROGRESS":
         return "bg-info-content	";
       case "COMPLETED":
@@ -138,8 +138,8 @@ export const TaskCard: React.FC<TaskCardProps> = ({
   };
 
   return (
-    <div className={`ml-${level * 12}`}>
-      <div className={`card ${getCardStyles(level)} ${getStatusColor(task.status)} glass`}>
+    <div className={``} data-theme="">
+      <div className={`${getCardStyles(level)} ${getStatusColor(task.status)} card `}>
         <div className="card-body">
           <div className="flex justify-between items-start">
             <div className="flex items-center gap-2">
@@ -185,7 +185,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({
               <span className={`badge ${getPriorityColor(task.priority)}`}>
                 {task.priority}
               </span>
-              <div className="dropdown ">
+              <div className="dropdown  ">
                 <div>
                   <label
                     tabIndex={0}
@@ -197,7 +197,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({
 
                 <ul
                   tabIndex={0}
-                  className="dropdown-content menu p-2 shadow bg-base-100 rounded-box z-20"
+                  className="dropdown-content menu p-2 shadow bg-base-300 rounded-box absolute"
                 >
                   <div className="tooltip" data-tip="Break task down">
                     <li>
