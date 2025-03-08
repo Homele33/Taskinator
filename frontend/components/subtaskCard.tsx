@@ -3,24 +3,22 @@ import { Pencil, Trash2, Check, Menu } from "lucide-react";
 
 interface SubtaskCardProps {
   subtask: Subtask;
-  level?: number;
   parentId: string;
   isDone: boolean;
   onRefresh: () => void;
 }
 
-const getCardStyles = (isDone: boolean) => {
-  const className =
-    "border-base-100 card hover:shadow-xl transition-shadow scale-90 opacity-90";
-  if (!isDone) {
-    return `${className}   border-l-4 bg-base-300 `;
-  }
-  return `${className} bg-green-900 `;
-};
+// const getCardStyles = (isDone: boolean) => {
+//   const className = "card hover:shadow-xl scale-90 opacity-90";
+//   if (!isDone) {
+//     return `${className}  bg-primary `;
+//   }
+//   return `${className} bg-green-900 `;
+// };
 
 export const SubtaskCard: React.FC<SubtaskCardProps> = ({
   subtask,
-  level = 1,
+
   onRefresh,
   parentId,
 }) => {
@@ -44,7 +42,7 @@ export const SubtaskCard: React.FC<SubtaskCardProps> = ({
 
   const handleComplete = async (id: string) => {
     const response = await fetch(
-      `http://localhost:5000/api/${parentId}/${subtask.id}/toggle_subtask`,
+      `http://localhost:5000/api/${parentId}/${id}/toggle_subtask`,
       {
         method: "PATCH",
       }
@@ -56,8 +54,11 @@ export const SubtaskCard: React.FC<SubtaskCardProps> = ({
   };
 
   return (
-    <div className={`ml-${level * 10}`}>
-      <div className={`${getCardStyles(subtask.isDone)}`}>
+    <div>
+      <div
+        className={`card scale-90  ${
+          subtask.isDone ? "bg-success-content" : "bg-primary-content"
+        }`}>
         <div className="card-body">
           <div className="flex justify-between items-start">
             <div className="flex items-center gap-2">
@@ -70,8 +71,7 @@ export const SubtaskCard: React.FC<SubtaskCardProps> = ({
                   onClick={() => handleComplete(subtask.id)}
                   className={`btn btn-ghost btn-md ${
                     subtask.isDone ? "text-error" : "text-green-500"
-                  }`}
-                >
+                  }`}>
                   <Check />
                 </button>
               </div>
@@ -81,14 +81,12 @@ export const SubtaskCard: React.FC<SubtaskCardProps> = ({
                 </label>
                 <ul
                   tabIndex={0}
-                  className=" p-2 shadow dropdown-content menu bg-base-100 rounded-box"
-                >
+                  className=" p-2 shadow dropdown-content menu bg-base-100 rounded-box">
                   <div className="tooltip" data-tip="Edit subtask">
                     <li>
                       <button
                         onClick={() => handleEditSubtask(subtask)}
-                        className="btn btn-ghost btn-md text-yellow-400"
-                      >
+                        className="btn btn-ghost btn-md text-yellow-400">
                         <Pencil /> {/* Edit icon */}
                       </button>
                     </li>
@@ -98,8 +96,7 @@ export const SubtaskCard: React.FC<SubtaskCardProps> = ({
                     <li>
                       <button
                         onClick={() => handleDeleteSubtask(subtask.id)}
-                        className="btn btn-ghost btn-md text-error"
-                      >
+                        className="btn btn-ghost btn-md text-error">
                         <Trash2 /> {/*Delete Icon */}
                       </button>
                     </li>

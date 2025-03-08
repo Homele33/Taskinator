@@ -1,15 +1,15 @@
 import { Menu, House, Calendar, Settings } from "lucide-react";
 import { Html, Head, Main, NextScript } from "next/document";
+import Link from "next/link";
 
 export default function Document() {
   return (
-    <Html lang="en" data-theme="dark">
+    <Html lang="en" data-theme="dracula">
       <Head />
       <body className="antialiased">
         <label
           htmlFor="drawer-toggle"
-          className="btn btn-ghost drawer-button absolute top-5 left-2"
-        >
+          className="btn btn-ghost drawer-button absolute top-5 left-2">
           <Menu />
         </label>
         <Main />
@@ -25,16 +25,16 @@ export default function Document() {
               <ul className="menu flex flex-col gap-4 w-full">
                 <div className="tooltip" data-tip="Home">
                   <li>
-                    <a href="/" className="btn flex">
+                    <Link href="/" className="btn flex">
                       <House />
-                    </a>
+                    </Link>
                   </li>
                 </div>
                 <div className="tooltip" data-tip="Calendar">
                   <li>
-                    <a href="/calendar" className="btn flex">
+                    <Link href="/calendar" className="btn flex">
                       <Calendar />
-                    </a>
+                    </Link>
                   </li>
                 </div>
                 <div className="tooltip" data-tip="Settings">

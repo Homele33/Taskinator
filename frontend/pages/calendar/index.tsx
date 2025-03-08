@@ -368,7 +368,7 @@ const TaskCalendar: React.FC<TaskCalendarProps> = ({ initialTasks = [] }) => {
   };
 
   return (
-    <div className="flex flex-col lg:flex-row gap-4 max-w-6xl mx-auto p-4">
+    <div className="flex flex-col lg:flex-row gap-4 max-w-7xl mx-auto p-4">
       {/* Calendar Section */}
       <div className="card bg-base-200 shadow-xl lg:w-2/3">
         <div className="card-body p-4">

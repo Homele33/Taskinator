@@ -2,25 +2,29 @@ import React, { useState, useEffect } from "react";
 import { Subtask, Task } from "./task";
 import SubtaskForm, { SubtaskFormData } from "./subtaskForm";
 import { SubtaskCard } from "./subtaskCard";
-import { Pencil, Trash2, SquarePlus, EllipsisVertical, Bot } from "lucide-react";
+import {
+  Pencil,
+  Trash2,
+  SquarePlus,
+  EllipsisVertical,
+  Bot,
+} from "lucide-react";
 
 interface TaskCardProps {
   task: Task;
-  level?: number;
   onRefresh: () => void;
   onEdit: (task: Task) => void;
 }
 
-const getCardStyles = (level: number) => {
+const getCardStyles = () => {
   // Base styles for all cards
   const baseStyles = "card shadow-lg hover:shadow-xl transition-shadow";
 
-  return `${baseStyles} border border-base-200`;
+  return `${baseStyles} `;
 };
 
 export const TaskCard: React.FC<TaskCardProps> = ({
   task,
-  level = 0,
   onRefresh,
   onEdit,
 }) => {
@@ -33,8 +37,9 @@ export const TaskCard: React.FC<TaskCardProps> = ({
   const [isFormOpen, setIsFormOpen] = useState(false);
 
   useEffect(() => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
     onRefresh;
-  }, [subtasks]);
+  }, [onRefresh, subtasks]);
 
   const fetchSubtasks = async () => {
     setIsLoadingSubtasks(true);
@@ -70,11 +75,11 @@ export const TaskCard: React.FC<TaskCardProps> = ({
   const getStatusColor = (status: Task["status"]) => {
     switch (status) {
       case "TODO":
-        return "bg-base-200";
+        return "bg-primary-content";
       case "IN_PROGRESS":
-        return "bg-blue-950";
+        return "bg-info-content	";
       case "COMPLETED":
-        return "bg-emerald-950";
+        return "bg-success-content";
       default:
         return "bg-base-200";
     }
@@ -138,8 +143,9 @@ export const TaskCard: React.FC<TaskCardProps> = ({
   };
 
   return (
-    <div className={`ml-${level * 12}`}>
-      <div className={`${getCardStyles(level)} ${getStatusColor(task.status)}`}>
+    <div className={``} data-theme="">
+      <div
+        className={`${getCardStyles()} ${getStatusColor(task.status)} card `}>
         <div className="card-body">
           <div className="flex justify-between items-start">
             <div className="flex items-center gap-2">
@@ -151,8 +157,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({
                     fetchSubtasks();
                     setIsExpanded(!isExpanded);
                   }}
-                  className="btn btn-ghost btn-sm btn-circle"
-                >
+                  className="btn btn-ghost btn-sm btn-circle">
                   {isLoadingSubtasks ? (
                     <span className="loading loading-spinner loading-xs"></span>
                   ) : (
@@ -163,8 +168,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({
                       }`}
                       fill="none"
                       viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
+                      stroke="currentColor">
                       <path
                         strokeLinecap="round"
                         strokeLinejoin="round"
@@ -175,9 +179,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({
                   )}
                 </button>
               )}
-              <h2
-                className={`${level > 0 ? "text-lg" : "text-xl"} font-bold  `}
-              >
+              <h2 className={`${"text-xl"} font-bold  text-primary`}>
                 {task.title}
               </h2>
             </div>
@@ -185,28 +187,25 @@ export const TaskCard: React.FC<TaskCardProps> = ({
               <span className={`badge ${getPriorityColor(task.priority)}`}>
                 {task.priority}
               </span>
-              <div className="dropdown-end dropdown">
+              <div className="dropdown  ">
                 <div>
                   <label
                     tabIndex={0}
-                    className="btn btn-ghost btn-circle btn-sm "
-                  >
+                    className="btn btn-ghost btn-circle btn-sm ">
                     <EllipsisVertical />
                   </label>
                 </div>
 
                 <ul
                   tabIndex={0}
-                  className="dropdown-content menu p-2 shadow bg-base-100 rounded-box z-20"
-                >
+                  className="dropdown-content menu p-2 shadow bg-base-300 rounded-box absolute">
                   <div className="tooltip" data-tip="Break task down">
                     <li>
                       <button
                         onClick={() => {
                           handleTaskBreaker(task.id);
                         }}
-                        className="btn btn-ghost btn-md text-purple-600"
-                      >
+                        className="btn btn-ghost btn-md text-purple-600">
                         <Bot /> {/* Task beaker*/}
                       </button>
                     </li>
@@ -218,8 +217,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({
                           setIsFormOpen(true);
                           setEditingSubtask(undefined);
                         }}
-                        className="btn btn-ghost btn-md text-green-500"
-                      >
+                        className="btn btn-ghost btn-md text-green-500">
                         <SquarePlus className="" /> {/* Add subtask icon */}
                       </button>
                     </li>
@@ -228,8 +226,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({
                     <li>
                       <button
                         onClick={() => onEdit(task)}
-                        className="btn btn-ghost btn-md text-yellow-400"
-                      >
+                        className="btn btn-ghost btn-md text-yellow-400">
                         <Pencil /> {/* Edit icon */}
                       </button>
                     </li>
@@ -238,8 +235,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({
                     <li>
                       <button
                         onClick={() => handleDeleteTask(task.id)}
-                        className="btn btn-ghost btn-md text-error"
-                      >
+                        className="btn btn-ghost btn-md text-error">
                         <Trash2 /> {/* Delete icon*/}
                       </button>
                     </li>
@@ -259,22 +255,21 @@ export const TaskCard: React.FC<TaskCardProps> = ({
             </div>
           </div>
 
-          <p className="text-gray-600">{task.description}</p>
+          <p className="text-accent">{task.description}</p>
 
           <div className="flex justify-between items-center mt-4">
             <div className="flex items-center gap-2">
               <select
                 className="select select-bordered select-sm"
                 value={task.status}
-                onChange={(e) => handleStatusChange(task.id, e.target.value)}
-              >
+                onChange={(e) => handleStatusChange(task.id, e.target.value)}>
                 <option value="TODO">Todo</option>
                 <option value="IN_PROGRESS">In Progress</option>
                 <option value="COMPLETED">Completed</option>
               </select>
             </div>
             {task.dueDate && (
-              <div className="text-sm text-gray-500">
+              <div className="text-sm text-accent">
                 Due: {new Date(task.dueDate).toDateString()}
               </div>
             )}
@@ -283,17 +278,11 @@ export const TaskCard: React.FC<TaskCardProps> = ({
       </div>
 
       {isExpanded && subtasks.length > 0 && (
-        <div className="mt-2 space-y-2 relative">
-          {/* Vertical connecting line */}
-          <div className="absolute left-4 top-0 bottom-0 w-0.5 bg-base-300" />
-
+        <div className="mt-2 space-y-2">
           {subtasks.map((subtask) => (
-            <div key={subtask.id} className="relative">
-              {/* Horizontal connecting line */}
-              <div className="absolute left-4 top-1/2 w-4 h-0.5 bg-base-300" />
+            <div key={subtask.id} className=" ">
               <SubtaskCard
                 subtask={subtask}
-                level={level + 1}
                 parentId={task.id}
                 onRefresh={() => {
                   fetchSubtasks();

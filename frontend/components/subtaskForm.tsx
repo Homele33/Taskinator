@@ -59,6 +59,37 @@ const SubtaskForm: React.FC<SubtaskFormProps> = ({
 
   if (!isOpen) return null;
 
+  if (loading) {
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center">
+        <div className="absolute inset-0 bg-black/50" onClick={onClose} />
+        <div className="relative rounded-lg shadow-xl w-96 p-6 bg-base-100">
+          <div className="flex items-center justify-center">
+            <div className="flex items-center gap-2 text-3xl text-primary-content">
+              <span className="loading loading-spinner loading-xs"></span>
+              Saving...
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+  if (error) {
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center">
+        <div className="absolute inset-0 bg-black/50" onClick={onClose} />
+        <div className="relative rounded-lg shadow-xl w-96 p-6 bg-base-100">
+          <h3 className="text-lg font-semibold mb-4">Error Saving Subtask</h3>
+          <p>{error}</p>
+          <button
+            className="mt-4 w-full rounded-md px-3 py-2 bg-primary-content text-white hover:bg-primary-content-hover"
+            onClick={onClose}>
+            Close
+          </button>
+        </div>
+      </div>
+    );
+  }
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       <div className="absolute inset-0 bg-black/50" onClick={onClose} />
@@ -102,14 +133,12 @@ const SubtaskForm: React.FC<SubtaskFormProps> = ({
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-md"
-            >
+              className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-md">
               Cancel
             </button>
             <button
               type="submit"
-              className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
-            >
+              className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600">
               {subtask ? "Save Changes" : "Add Subtask"}
             </button>
           </div>
