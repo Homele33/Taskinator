@@ -11,7 +11,6 @@ const MainPage: React.FC = () => {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | undefined>(undefined);
 
-  const apiURL = process.env.NODE_ENV;
   useEffect(() => {
     getTasks();
   }, []);
@@ -90,8 +89,7 @@ const MainPage: React.FC = () => {
             xmlns="http://www.w3.org/2000/svg"
             className="stroke-current shrink-0 h-6 w-6"
             fill="none"
-            viewBox="0 0 24 24"
-          >
+            viewBox="0 0 24 24">
             <path
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -118,8 +116,7 @@ const MainPage: React.FC = () => {
           onClick={() => {
             setEditingTask(undefined);
             setIsFormOpen(true);
-          }}
-        >
+          }}>
           Add New Task
         </button>
 
