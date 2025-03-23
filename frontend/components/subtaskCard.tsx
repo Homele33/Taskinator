@@ -42,7 +42,7 @@ export const SubtaskCard: React.FC<SubtaskCardProps> = ({
 
   const handleComplete = async (id: string) => {
     const response = await fetch(
-      `http://localhost:5000/api/${parentId}/${id}/toggle_subtask`,
+      `http://localhost:5000/api/tasks/subtasks/${parentId}/${id}`,
       {
         method: "PATCH",
       }
@@ -56,9 +56,8 @@ export const SubtaskCard: React.FC<SubtaskCardProps> = ({
   return (
     <div>
       <div
-        className={`card scale-90  ${
-          subtask.isDone ? "bg-success-content" : "bg-primary-content"
-        }`}>
+        className={`card scale-90  ${subtask.isDone ? "bg-success-content" : "bg-primary-content"
+          }`}>
         <div className="card-body">
           <div className="flex justify-between items-start">
             <div className="flex items-center gap-2">
@@ -69,9 +68,8 @@ export const SubtaskCard: React.FC<SubtaskCardProps> = ({
               <div className="tooltip" data-tip="Complete">
                 <button
                   onClick={() => handleComplete(subtask.id)}
-                  className={`btn btn-ghost btn-md ${
-                    subtask.isDone ? "text-error" : "text-green-500"
-                  }`}>
+                  className={`btn btn-ghost btn-md ${subtask.isDone ? "text-error" : "text-green-500"
+                    }`}>
                   <Check />
                 </button>
               </div>
