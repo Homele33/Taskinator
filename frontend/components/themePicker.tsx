@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from "react";
 // theme picker 
 export default function ThemePicker() {
+
+
   return (
-    <div className="dropdown mb-72" >
+    <div className="dropdown mb-72"  >
       <div tabIndex={0} role="button" className="btn m-1">
         Theme
       </div>
@@ -13,7 +14,8 @@ export default function ThemePicker() {
             name="theme-dropdown"
             className="theme-controller  btn btn-sm btn-block btn-ghost justify-start"
             aria-label="Default"
-            value="default" />
+            value="default"
+          />
         </li>
         <li>
           <input
@@ -21,7 +23,9 @@ export default function ThemePicker() {
             name="theme-dropdown"
             className="theme-controller  btn btn-sm btn-block btn-ghost justify-start"
             aria-label="Retro"
-            value="retro" />
+            value="retro"
+          />
+
         </li>
         <li>
           <input
@@ -56,6 +60,6 @@ export default function ThemePicker() {
             value="halloween" />
         </li>
       </ul>
-    </div>
+    </div >
   )
 }
