@@ -3,6 +3,7 @@ import TaskForm, { TaskFormData } from "@/components/taskForm";
 import { Task } from "@/components/task";
 import { TaskCard } from "@/components/taskCard";
 import { fetchTasks } from "@/utils/taskUtils";
+import { FuzzySearchBar } from "@/components/searchBar";
 
 const MainPage: React.FC = () => {
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -14,6 +15,11 @@ const MainPage: React.FC = () => {
   useEffect(() => {
     getTasks();
   }, []);
+
+  const handleTaskSelect = (task: Task) => {
+    setIsFormOpen(true);
+    setEditingTask(task);
+  };
 
   const getTasks = async () => {
     try {
@@ -110,7 +116,7 @@ const MainPage: React.FC = () => {
     <div className="container mx-auto p-4">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Tasks</h1>
-
+        <FuzzySearchBar tasks={tasks} onTaskSelect={handleTaskSelect} />
         <button
           className="btn btn-primary"
           onClick={() => {
