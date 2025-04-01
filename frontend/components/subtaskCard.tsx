@@ -56,8 +56,9 @@ export const SubtaskCard: React.FC<SubtaskCardProps> = ({
   return (
     <div>
       <div
-        className={`card scale-90  ${subtask.isDone ? "bg-success-content" : "bg-primary-content"
-          }`}>
+        className={`card scale-90  ${
+          subtask.isDone ? "bg-success-content" : "bg-primary-content"
+        }`}>
         <div className="card-body">
           <div className="flex justify-between items-start">
             <div className="flex items-center gap-2">
@@ -65,11 +66,14 @@ export const SubtaskCard: React.FC<SubtaskCardProps> = ({
             </div>
 
             <div className="">
-              <div className="tooltip" data-tip="Complete">
+              <div
+                className="tooltip"
+                data-tip={subtask.isDone ? "Uncomplete" : "Complete"}>
                 <button
                   onClick={() => handleComplete(subtask.id)}
-                  className={`btn btn-ghost btn-md ${subtask.isDone ? "text-error" : "text-green-500"
-                    }`}>
+                  className={`btn btn-ghost btn-md ${
+                    subtask.isDone ? "text-error" : "text-green-500"
+                  }`}>
                   <Check />
                 </button>
               </div>

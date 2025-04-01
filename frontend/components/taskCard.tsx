@@ -260,7 +260,13 @@ export const TaskCard: React.FC<TaskCardProps> = ({
           <div className="flex justify-between items-center mt-4">
             <div className="flex items-center gap-2">
               <select
-                className="select select-bordered select-sm"
+                className={`select select-bordered select-sm text-base-100 ${
+                  {
+                    TODO: "bg-primary",
+                    IN_PROGRESS: "bg-info",
+                    COMPLETED: "bg-success",
+                  }[task.status]
+                }`}
                 value={task.status}
                 onChange={(e) => handleStatusChange(task.id, e.target.value)}>
                 <option value="TODO">Todo</option>
