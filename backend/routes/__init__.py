@@ -1,4 +1,3 @@
-# from flask import Blueprint
 from .task_nlp import task_nlp_bp
 from .subtasks import subtasks_bp
 from .tasks import tasks_bp

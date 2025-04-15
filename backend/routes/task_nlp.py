@@ -1,7 +1,6 @@
 from flask import Blueprint, request, jsonify
 from services.nlp import parse_task_text
 
-
 task_nlp_bp = Blueprint("task_nlp", __name__)
 
 

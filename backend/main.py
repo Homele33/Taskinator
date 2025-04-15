@@ -1,25 +1,11 @@
-from flask import request, jsonify
+from flask import jsonify
 from config import app, db
 from models import Task, SubTask
-from sqlalchemy.sql import null
 from Ai.taskBreakdown import main as breakdown
 
 from routes import register_blueprints
 
 register_blueprints(app)
-
-
-@app.route("/api/tasks/status/<int:task_id>", methods=["PATCH"])  # change task status
-def toggle_task(task_id):
-    task = Task.query.get(task_id)
-    status = request.args.get("status")
-    if not task:
-        return jsonify({"message": "Task not found"}), 404
-
-    task.status = status
-    db.session.commit()
-
-    return jsonify({"message": "Task status changed"}), 200
 
 
 @app.route(
