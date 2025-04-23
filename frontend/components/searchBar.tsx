@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, ReactNode } from "react";
-import { Task, Subtask } from "./task";
+import { Task } from "./task";
 
 // Fuzzy search implementation
 const fuzzySearch = (items: Task[], query: string): Task[] => {
@@ -53,7 +53,7 @@ export const FuzzySearchBar = ({
     const lowerText = text.toLowerCase();
     const lowerQuery = query.toLowerCase();
 
-    let result: ReactNode[] = [];
+    const result: ReactNode[] = [];
     let lastIndex = 0;
     let currentQueryIndex = 0;
 
@@ -69,7 +69,7 @@ export const FuzzySearchBar = ({
 
         // Add highlighted character
         result.push(
-          <span key={i} className="bg-yellow-200 font-medium">
+          <span key={i} className="text-accent text-2xl">
             {text[i]}
           </span>
         );
@@ -118,7 +118,7 @@ export const FuzzySearchBar = ({
   return (
     <div className="w-full max-w-md mx-auto">
       <div className="relative">
-        <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+        <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none z-50">
           <svg
             className="w-4 h-4 text-gray-500"
             aria-hidden="true"
@@ -144,7 +144,7 @@ export const FuzzySearchBar = ({
       </div>
 
       {searchQuery && (
-        <div className="mt-2 border border-gray-300 rounded-lg shadow-sm max-h-80 overflow-y-auto">
+        <div className="mt-2 border border-gray-300 rounded-lg shadow-sm max-h-80 overflow-y-auto absolute z-10">
           {filteredTasks.length > 0 ? (
             <ul className="divide-y divide-gray-200">
               {filteredTasks.map((task) => (
