@@ -7,6 +7,8 @@ app = Flask(__name__)
 CORS(app)
 
 env = os.getenv("FLASK_ENV")
+
+
 if env == "testing":
     app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///test_database.db"
 else:
