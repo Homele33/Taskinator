@@ -38,9 +38,9 @@ export default function Document() {
                   </li>
                 </div>
                 <div className="tooltip" data-tip="Settings">
-                  <a href="/settings" className="btn flex">
+                  <Link href="/settings" className="btn flex">
                     <Settings />
-                  </a>
+                  </Link>
                   <div className="drawer-content-footer justify-end"></div>
                 </div>
               </ul>
