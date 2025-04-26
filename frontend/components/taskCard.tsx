@@ -247,7 +247,8 @@ export const TaskCard: React.FC<TaskCardProps> = ({
                   isOpen={isFormOpen}
                   onClose={() => {
                     setIsFormOpen(false);
-                    setEditingSubtask(undefined);
+                    setEditingSubtask(editSubtask);
+                    
                   }}
                   onSubmit={handleAddSubtask}
                 />

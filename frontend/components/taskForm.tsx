@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Task, Subtask } from "./task";
+import { Task } from "./task";
 
 interface TaskFormProps {
   task?: Task;

@@ -81,7 +81,9 @@ export const FuzzySearchBar = ({
 
     // Add remaining text
     if (lastIndex < text.length) {
-      result.push(text.substring(lastIndex));
+      result.push(
+        <span className="text-base-content"> {text.substring(lastIndex)}</span>
+      );
     }
 
     return result;
@@ -124,7 +126,8 @@ export const FuzzySearchBar = ({
             aria-hidden="true"
             xmlns="http://www.w3.org/2000/svg"
             fill="none"
-            viewBox="0 0 20 20">
+            viewBox="0 0 20 20"
+          >
             <path
               stroke="currentColor"
               strokeLinecap="round"
@@ -136,7 +139,7 @@ export const FuzzySearchBar = ({
         </div>
         <input
           type="search"
-          className="block w-full p-4 pl-10 text-sm border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+          className="block w-full p-4 pl-10 text-sm border text-base-content border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
           placeholder="Search tasks..."
           value={searchQuery}
           onChange={handleSearchChange}
@@ -144,21 +147,22 @@ export const FuzzySearchBar = ({
       </div>
 
       {searchQuery && (
-        <div className="mt-2 border border-gray-300 rounded-lg shadow-sm max-h-80 overflow-y-auto absolute z-10">
+        <div className="mt-2 border border-gray-300 rounded-lg shadow-sm max-h-80 overflow-y-auto absolute z-10 bg-base-100">
           {filteredTasks.length > 0 ? (
             <ul className="divide-y divide-gray-200">
               {filteredTasks.map((task) => (
                 <li
                   key={task.id}
                   className="px-4 py-3 hover:bg-gray-50 cursor-pointer"
-                  onClick={() => onTaskSelect(task)}>
+                  onClick={() => onTaskSelect(task)}
+                >
                   <div className="flex flex-col">
                     <div className="font-medium">
                       {highlightMatch(task.title, searchQuery)}
                     </div>
 
                     {task.description && (
-                      <div className="text-sm text-gray-600 mt-1 truncate">
+                      <div className="text-sm text-accent-content mt-1 truncate">
                         {task.description}
                       </div>
                     )}
@@ -167,17 +171,19 @@ export const FuzzySearchBar = ({
                       <span
                         className={`text-xs px-2 py-1 rounded-full ${getStatusBadgeColor(
                           task.status
-                        )}`}>
+                        )}`}
+                      >
                         {task.status}
                       </span>
                       <span
                         className={`text-xs px-2 py-1 rounded-full ${getPriorityBadgeColor(
                           task.priority
-                        )}`}>
+                        )}`}
+                      >
                         {task.priority}
                       </span>
                       {task.dueDate && (
-                        <span className="text-xs">
+                        <span className="text-xs text-base-content">
                           Due: {new Date(task.dueDate).toLocaleDateString()}
                         </span>
                       )}
@@ -192,7 +198,7 @@ export const FuzzySearchBar = ({
               ))}
             </ul>
           ) : (
-            <div className="px-4 py-3 text-sm text-gray-500">
+            <div className="px-4 py-3 text-sm text-accent">
               No matching tasks found
             </div>
           )}

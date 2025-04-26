@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Subtask, Task } from "@/components/task";
+import { Task } from "@/components/task";
 import { fetchTasks } from "@/utils/taskUtils";
 
 interface CalendarDay {
@@ -21,19 +21,19 @@ const TaskCalendar: React.FC<TaskCalendarProps> = ({ initialTasks = [] }) => {
   );
 
   useEffect(() => {
+    const theme = localStorage.getItem("theme") || "default";
+    document.documentElement.setAttribute("data-theme", theme);
     getTasks();
-  },[]);
+  }, []);
 
   const getTasks = async () => {
-    try{
-        const data = await fetchTasks();
-        setTasks(data.tasks);
+    try {
+      const data = await fetchTasks();
+      setTasks(data.tasks);
+    } catch (err) {
+      console.error("Error fetching tasks:", err);
     }
-   catch (err) {
-    console.error("Error fetching tasks:", err);
-   }
-  }
-
+  };
 
   // State for current date display
   const [currentMonth, setCurrentMonth] = useState<number>(
@@ -228,7 +228,7 @@ const TaskCalendar: React.FC<TaskCalendarProps> = ({ initialTasks = [] }) => {
         }
       }
     }
-  }, [calendar]);
+  }, [calendar, selectedDay]);
 
   // Render task details
   const renderTaskDetails = (task: Task) => {
@@ -236,7 +236,9 @@ const TaskCalendar: React.FC<TaskCalendarProps> = ({ initialTasks = [] }) => {
       <div className="space-y-4">
         <div className="flex justify-between items-start">
           <div>
-            <h4 className="text-lg font-semibold">{task.title}</h4>
+            <h4 className="text-lg text-base-content font-semibold">
+              {task.title}
+            </h4>
             <div className="flex gap-2 mt-1">
               <span className={statusClasses[task.status]}>
                 {task.status.replace("_", " ")}
@@ -261,14 +263,18 @@ const TaskCalendar: React.FC<TaskCalendarProps> = ({ initialTasks = [] }) => {
 
         {task.description && (
           <div className="mt-4">
-            <h5 className="text-sm font-medium opacity-70">Description</h5>
+            <h5 className="text-sm text-base-content font-medium opacity-70">
+              Description
+            </h5>
             <p className="mt-1">{task.description}</p>
           </div>
         )}
 
         {task.dueDate && (
           <div className="mt-2">
-            <h5 className="text-sm font-medium opacity-70">Due Date</h5>
+            <h5 className="text-sm text-base-content font-medium opacity-70">
+              Due Date
+            </h5>
             <p className="mt-1">
               {new Date(task.dueDate).toLocaleDateString()}
             </p>
@@ -277,7 +283,9 @@ const TaskCalendar: React.FC<TaskCalendarProps> = ({ initialTasks = [] }) => {
 
         {task.subtasks.length > 0 && (
           <div className="mt-4">
-            <h5 className="text-sm font-medium opacity-70">Subtasks</h5>
+            <h5 className="text-sm text-base-content font-medium opacity-70">
+              Subtasks
+            </h5>
             <ul className="mt-2 space-y-2">
               {task.subtasks.map((subtask) => (
                 <li key={subtask.id} className="flex items-start gap-2">
@@ -296,7 +304,7 @@ const TaskCalendar: React.FC<TaskCalendarProps> = ({ initialTasks = [] }) => {
                       {subtask.title}
                     </p>
                     {subtask.description && (
-                      <p className="text-xs opacity-70 mt-1">
+                      <p className="text-xs text-base-content opacity-70 mt-1">
                         {subtask.description}
                       </p>
                     )}
@@ -314,7 +322,7 @@ const TaskCalendar: React.FC<TaskCalendarProps> = ({ initialTasks = [] }) => {
   const renderTaskList = () => {
     return (
       <>
-        <h3 className="card-title">
+        <h3 className="card-title text-base-content">
           {selectedDay
             ? `Tasks for ${monthNames[selectedDay.month]} ${selectedDay.day}, ${
                 selectedDay.year
@@ -329,7 +337,7 @@ const TaskCalendar: React.FC<TaskCalendarProps> = ({ initialTasks = [] }) => {
                 <li key={task.id}>
                   <button
                     onClick={() => handleTaskClick(task)}
-                    className="border-b border-base-300 py-2 hover:bg-base-300 w-full text-left"
+                    className="border-b border-base-300 py-2 hover:bg-base-300 w-full text-base-content text-left"
                   >
                     <div className="flex items-center justify-between w-full">
                       <div className="flex items-center">
@@ -360,7 +368,7 @@ const TaskCalendar: React.FC<TaskCalendarProps> = ({ initialTasks = [] }) => {
 
         {!selectedDay && (
           <div className="flex items-center justify-center h-32 opacity-50">
-            <p>Click on a date to view tasks</p>
+            <p className="text-base-content">Click on a date to view tasks</p>
           </div>
         )}
       </>
@@ -374,14 +382,14 @@ const TaskCalendar: React.FC<TaskCalendarProps> = ({ initialTasks = [] }) => {
         <div className="card-body p-4">
           <div className="flex items-center justify-between pb-4 border-b border-base-300">
             <div>
-              <h2 className="card-title text-xl">
+              <h2 className="card-title text-xl text-base-content font-semibold">
                 {monthNames[currentMonth]} {currentYear}
               </h2>
             </div>
             <div className="flex space-x-2">
               <button
                 onClick={goToPrevMonth}
-                className="btn btn-circle btn-sm btn-ghost"
+                className="btn btn-circle btn-sm btn-ghost text-base-content"
               >
                 &lt;
               </button>
@@ -390,7 +398,7 @@ const TaskCalendar: React.FC<TaskCalendarProps> = ({ initialTasks = [] }) => {
               </button>
               <button
                 onClick={goToNextMonth}
-                className="btn btn-circle btn-sm btn-ghost"
+                className="btn btn-circle btn-sm btn-ghost text-base-content"
               >
                 &gt;
               </button>
@@ -403,7 +411,7 @@ const TaskCalendar: React.FC<TaskCalendarProps> = ({ initialTasks = [] }) => {
             {dayNames.map((day, index) => (
               <div
                 key={index}
-                className="text-center py-2 text-sm font-medium border-b border-base-300"
+                className="text-center py-2 text-sm font-medium border-b border-base-300 text-base-content"
               >
                 {day}
               </div>
@@ -426,7 +434,7 @@ const TaskCalendar: React.FC<TaskCalendarProps> = ({ initialTasks = [] }) => {
               >
                 <div className="flex justify-between">
                   <span
-                    className={`text-sm ${
+                    className={`text-sm text-base-content ${
                       new Date().getDate() === day.day &&
                       new Date().getMonth() === day.month &&
                       new Date().getFullYear() === day.year
@@ -446,13 +454,13 @@ const TaskCalendar: React.FC<TaskCalendarProps> = ({ initialTasks = [] }) => {
                         key={task.id}
                         className={`${
                           priorityClasses[task.priority]
-                        } text-xs p-1 mb-1 rounded truncate`}
+                        } text-xs p-1 mb-1 rounded truncate text-base-content`}
                       >
                         {task.title}
                       </div>
                     ))}
                   {day.tasks && day.tasks.length > 2 && (
-                    <div className="text-xs opacity-70">
+                    <div className="text-xs opacity-70 text-base-content">
                       +{day.tasks.length - 2} more
                     </div>
                   )}
