@@ -162,7 +162,7 @@ export const FuzzySearchBar = ({
                     </div>
 
                     {task.description && (
-                      <div className="text-sm text-accent-content mt-1 truncate">
+                      <div className="text-sm text-accent mt-1 truncate">
                         {task.description}
                       </div>
                     )}

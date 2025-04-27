@@ -1,5 +1,6 @@
 import { Subtask } from "./task";
-import { Pencil, Trash2, Check, Menu } from "lucide-react";
+import { Pencil, Trash2, Check, EllipsisVertical } from "lucide-react";
+
 
 interface SubtaskCardProps {
   subtask: Subtask;
@@ -56,13 +57,12 @@ export const SubtaskCard: React.FC<SubtaskCardProps> = ({
   return (
     <div>
       <div
-        className={`card scale-90  ${
-          subtask.isDone ? "bg-success-content" : "bg-primary-content"
-        }`}>
+        className={`card scale-90  ${subtask.isDone ? "bg-success-content" : "bg-primary-content"
+          }`}>
         <div className="card-body">
           <div className="flex justify-between items-start">
             <div className="flex items-center gap-2">
-              <h2 className="text-lg font-bold">{subtask.title}</h2>
+              <h2 className="text-lg font-bold text-primary">{subtask.title}</h2>
             </div>
 
             <div className="">
@@ -71,19 +71,18 @@ export const SubtaskCard: React.FC<SubtaskCardProps> = ({
                 data-tip={subtask.isDone ? "Uncomplete" : "Complete"}>
                 <button
                   onClick={() => handleComplete(subtask.id)}
-                  className={`btn btn-ghost btn-md ${
-                    subtask.isDone ? "text-error" : "text-green-500"
-                  }`}>
+                  className={`btn btn-ghost btn-md ${subtask.isDone ? "text-error" : "text-green-500"
+                    }`}>
                   <Check />
                 </button>
               </div>
               <div className="dropdown dropdown-top z-100">
-                <label tabIndex={0}>
-                  <Menu />
+                <label tabIndex={0} className="text-primary">
+                  <EllipsisVertical />
                 </label>
                 <ul
                   tabIndex={0}
-                  className=" p-2 shadow dropdown-content menu bg-base-100 rounded-box">
+                  className=" p-2 shadow dropdown-content menu bg-accent-content rounded-box">
                   <div className="tooltip" data-tip="Edit subtask">
                     <li>
                       <button

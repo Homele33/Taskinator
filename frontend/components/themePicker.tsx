@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import useTheme from "@/utils/themeUtils";
 // theme picker
 
 export default function ThemePicker() {
@@ -8,8 +9,9 @@ export default function ThemePicker() {
 
   useEffect(() => {
     const theme = localStorage.getItem("theme") || "default";
-    console.log("Theme from localStorage:", userTheme);
+    console.log("Theme from localStorage:", theme);
     setUserTheme(theme);
+    useTheme()
   }, []);
 
   const handleThemeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
