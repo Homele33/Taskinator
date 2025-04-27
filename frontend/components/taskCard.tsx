@@ -72,18 +72,6 @@ export const TaskCard: React.FC<TaskCardProps> = ({
     }
   };
 
-  const getStatusColor = (status: Task["status"]) => {
-    switch (status) {
-      case "TODO":
-        return "bg-primary-content";
-      case "IN_PROGRESS":
-        return "bg-info-content	";
-      case "COMPLETED":
-        return "bg-success-content";
-      default:
-        return "bg-base-200";
-    }
-  };
 
   const handleAddSubtask = async (subtask: SubtaskFormData) => {
     const response = await fetch(
@@ -145,7 +133,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({
   return (
     <div className={``} data-theme="">
       <div
-        className={`${getCardStyles()} ${getStatusColor(task.status)} card `}>
+        className={`${getCardStyles()} bg-primary-content`}>
         <div className="card-body">
           <div className="flex justify-between items-start">
             <div className="flex items-center gap-2">
@@ -163,9 +151,8 @@ export const TaskCard: React.FC<TaskCardProps> = ({
                   ) : (
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
-                      className={`h-4 w-4 transition-transform ${
-                        isExpanded ? "rotate-90" : ""
-                      }`}
+                      className={`h-4 w-4 transition-transform ${isExpanded ? "rotate-90" : ""
+                        }`}
                       fill="none"
                       viewBox="0 0 24 24"
                       stroke="currentColor">
@@ -191,14 +178,14 @@ export const TaskCard: React.FC<TaskCardProps> = ({
                 <div>
                   <label
                     tabIndex={0}
-                    className="btn btn-ghost btn-circle btn-sm ">
+                    className="text-primary btn btn-ghost btn-circle btn-sm ">
                     <EllipsisVertical />
                   </label>
                 </div>
 
                 <ul
                   tabIndex={0}
-                  className="dropdown-content menu p-2 shadow bg-base-300 rounded-box absolute">
+                  className="dropdown-content menu p-2 shadow bg-accent-content rounded-box absolute">
                   <div className="tooltip" data-tip="Break task down">
                     <li>
                       <button
@@ -247,7 +234,8 @@ export const TaskCard: React.FC<TaskCardProps> = ({
                   isOpen={isFormOpen}
                   onClose={() => {
                     setIsFormOpen(false);
-                    setEditingSubtask(undefined);
+                    setEditingSubtask(editSubtask);
+
                   }}
                   onSubmit={handleAddSubtask}
                 />
@@ -260,13 +248,12 @@ export const TaskCard: React.FC<TaskCardProps> = ({
           <div className="flex justify-between items-center mt-4">
             <div className="flex items-center gap-2">
               <select
-                className={`select select-bordered select-sm text-base-100 ${
-                  {
-                    TODO: "bg-primary",
-                    IN_PROGRESS: "bg-info",
-                    COMPLETED: "bg-success",
-                  }[task.status]
-                }`}
+                className={`select select-bordered select-sm text-base-100 ${{
+                  TODO: "bg-primary",
+                  IN_PROGRESS: "bg-info",
+                  COMPLETED: "bg-success",
+                }[task.status]
+                  }`}
                 value={task.status}
                 onChange={(e) => handleStatusChange(task.id, e.target.value)}>
                 <option value="TODO">Todo</option>

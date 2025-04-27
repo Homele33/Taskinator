@@ -1,13 +1,34 @@
-// theme picker 
-export default function ThemePicker() {
+"use client";
 
+import { useEffect, useState } from "react";
+import useTheme from "@/utils/themeUtils";
+// theme picker
+
+export default function ThemePicker() {
+  const [userTheme, setUserTheme] = useState("default");
+
+  useEffect(() => {
+    const theme = localStorage.getItem("theme") || "default";
+    console.log("Theme from localStorage:", theme);
+    setUserTheme(theme);
+    useTheme()
+  }, []);
+
+  const handleThemeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const theme = e.target.value;
+    setUserTheme(theme);
+    localStorage.setItem("theme", theme);
+  };
 
   return (
-    <div className="dropdown mb-72"  >
+    <div className="dropdown mb-72">
       <div tabIndex={0} role="button" className="btn m-1">
         Theme
       </div>
-      <ul tabIndex={0} className="dropdown-content bg-base-300 rounded-box z-1 w-52 p-2 shadow-2xl">
+      <ul
+        tabIndex={0}
+        className="dropdown-content bg-base-300 rounded-box z-1 w-52 p-2 shadow-2xl"
+      >
         <li>
           <input
             type="radio"
@@ -15,6 +36,7 @@ export default function ThemePicker() {
             className="theme-controller  btn btn-sm btn-block btn-ghost justify-start"
             aria-label="Default"
             value="default"
+            onChange={handleThemeChange}
           />
         </li>
         <li>
@@ -24,8 +46,8 @@ export default function ThemePicker() {
             className="theme-controller  btn btn-sm btn-block btn-ghost justify-start"
             aria-label="Retro"
             value="retro"
+            onChange={handleThemeChange}
           />
-
         </li>
         <li>
           <input
@@ -33,7 +55,9 @@ export default function ThemePicker() {
             name="theme-dropdown"
             className="theme-controller  btn btn-sm btn-block btn-ghost justify-start"
             aria-label="Cyberpunk"
-            value="cyberpunk" />
+            value="cyberpunk"
+            onChange={handleThemeChange}
+          />
         </li>
         <li>
           <input
@@ -41,7 +65,9 @@ export default function ThemePicker() {
             name="theme-dropdown"
             className="theme-controller  btn btn-sm btn-block btn-ghost justify-start"
             aria-label="Valentine"
-            value="valentine" />
+            value="valentine"
+            onChange={handleThemeChange}
+          />
         </li>
         <li>
           <input
@@ -49,7 +75,9 @@ export default function ThemePicker() {
             name="theme-dropdown"
             className="theme-controller  btn btn-sm btn-block btn-ghost justify-start"
             aria-label="Aqua"
-            value="aqua" />
+            value="aqua"
+            onChange={handleThemeChange}
+          />
         </li>
         <li>
           <input
@@ -57,9 +85,11 @@ export default function ThemePicker() {
             name="theme-dropdown"
             className="theme-controller btn btn-sm btn-block btn-ghost justify-start"
             aria-label="Halloween"
-            value="halloween" />
+            value="halloween"
+            onChange={handleThemeChange}
+          />
         </li>
       </ul>
-    </div >
-  )
+    </div>
+  );
 }
