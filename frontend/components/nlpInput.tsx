@@ -10,9 +10,9 @@ const NaturalLanguageTaskInput: React.FC<NaturalLanguageInputProps> = ({ onTaskC
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
 
-  const api_url = process.env.API_URL;
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
 
     if (!inputText.trim()) return;
 
@@ -20,7 +20,7 @@ const NaturalLanguageTaskInput: React.FC<NaturalLanguageInputProps> = ({ onTaskC
     setErrorMessage('');
 
     try {
-      const response = await fetch(`http://localhost:5000/api/ai/parseTask`, {
+      const response = await fetch(`http://localhost:5000/ai/parseTask`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

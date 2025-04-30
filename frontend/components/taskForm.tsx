@@ -159,7 +159,7 @@ const TaskForm: React.FC<TaskFormProps> = ({
                 <span className="label-text">Due Date</span>
               </label>
               <input
-                type="date"
+                type="datetime-local"
                 className="input input-bordered w-full"
                 name="dueDate"
                 value={formData.dueDate || undefined}
