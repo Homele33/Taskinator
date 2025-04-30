@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Subtask, Task } from "./task";
+import { Subtask, Task } from "./tasksTypes";
 import SubtaskForm, { SubtaskFormData } from "./subtaskForm";
 import { SubtaskCard } from "./subtaskCard";
 import {
@@ -263,7 +263,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({
             </div>
             {task.dueDate && (
               <div className="text-sm text-accent">
-                Due: {new Date(task.dueDate).toDateString()}
+                Due: {new Date(task.dueDate).toLocaleString()}
               </div>
             )}
           </div>

@@ -1,4 +1,4 @@
-import { Subtask } from "./task";
+import { Subtask } from "./tasksTypes";
 import { Pencil, Trash2, Check, EllipsisVertical } from "lucide-react";
 
 

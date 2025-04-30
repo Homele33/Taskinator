@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Subtask } from "./task";
+import { Subtask } from "./tasksTypes";
 
 export interface SubtaskFormData {
   title: string;
