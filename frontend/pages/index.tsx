@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from "react";
 import TaskForm, { TaskFormData } from "@/components/taskForm";
-import { Task } from "@/components/task";
+import { Task } from "@/components/tasksTypes";
 import { TaskCard } from "@/components/taskCard";
 import { fetchTasks } from "@/utils/taskUtils";
 import { FuzzySearchBar } from "@/components/searchBar";
+import NaturalLanguageTaskInput from "@/components/nlpInput";
 
 
 const MainPage: React.FC = () => {
@@ -160,6 +161,7 @@ const MainPage: React.FC = () => {
           ))}
         </div>
       )}
+      <NaturalLanguageTaskInput onTaskCreated={getTasks} />
     </div>
   );
 };

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, ReactNode } from "react";
-import { Task } from "./task";
+import { Task } from "./tasksTypes";
 
 // Fuzzy search implementation
 const fuzzySearch = (items: Task[], query: string): Task[] => {
