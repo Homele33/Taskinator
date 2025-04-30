@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Task } from "@/components/task";
+import { Task } from "@/components/tasksTypes";
 import { fetchTasks } from "@/utils/taskUtils";
 
 interface CalendarDay {
@@ -244,13 +244,12 @@ const TaskCalendar: React.FC<TaskCalendarProps> = ({ initialTasks = [] }) => {
                 {task.status.replace("_", " ")}
               </span>
               <span
-                className={`badge ${
-                  task.priority === "HIGH"
-                    ? "badge-error"
-                    : task.priority === "MEDIUM"
+                className={`badge ${task.priority === "HIGH"
+                  ? "badge-error"
+                  : task.priority === "MEDIUM"
                     ? "badge-warning"
                     : "badge-info"
-                }`}
+                  }`}
               >
                 {task.priority}
               </span>
@@ -324,9 +323,8 @@ const TaskCalendar: React.FC<TaskCalendarProps> = ({ initialTasks = [] }) => {
       <>
         <h3 className="card-title text-base-content">
           {selectedDay
-            ? `Tasks for ${monthNames[selectedDay.month]} ${selectedDay.day}, ${
-                selectedDay.year
-              }`
+            ? `Tasks for ${monthNames[selectedDay.month]} ${selectedDay.day}, ${selectedDay.year
+            }`
             : "Select a day to view tasks"}
         </h3>
 
@@ -342,18 +340,17 @@ const TaskCalendar: React.FC<TaskCalendarProps> = ({ initialTasks = [] }) => {
                     <div className="flex items-center justify-between w-full">
                       <div className="flex items-center">
                         <span
-                          className={`w-3 h-3 rounded-full mr-2 ${
-                            task.priority === "HIGH"
-                              ? "bg-error"
-                              : task.priority === "MEDIUM"
+                          className={`w-3 h-3 rounded-full mr-2 ${task.priority === "HIGH"
+                            ? "bg-error"
+                            : task.priority === "MEDIUM"
                               ? "bg-warning"
                               : "bg-success"
-                          }`}
+                            }`}
                         ></span>
                         <span>{task.title}</span>
                       </div>
                       <span className={`${statusClasses[task.status]} ml-2`}>
-                        {}
+                        { }
                       </span>
                     </div>
                   </button>
@@ -422,25 +419,22 @@ const TaskCalendar: React.FC<TaskCalendarProps> = ({ initialTasks = [] }) => {
               <div
                 key={index}
                 onClick={() => handleDayClick(day)}
-                className={`min-h-24 p-1 border border-base-300 ${
-                  !day.isCurrentMonth ? "opacity-50" : ""
-                } ${
-                  selectedDay?.day === day.day &&
-                  selectedDay?.month === day.month &&
-                  selectedDay?.year === day.year
+                className={`min-h-24 p-1 border border-base-300 ${!day.isCurrentMonth ? "opacity-50" : ""
+                  } ${selectedDay?.day === day.day &&
+                    selectedDay?.month === day.month &&
+                    selectedDay?.year === day.year
                     ? "border-primary border-2"
                     : ""
-                } hover:bg-base-300 cursor-pointer`}
+                  } hover:bg-base-300 cursor-pointer`}
               >
                 <div className="flex justify-between">
                   <span
-                    className={`text-sm text-base-content ${
-                      new Date().getDate() === day.day &&
+                    className={`text-sm text-base-content ${new Date().getDate() === day.day &&
                       new Date().getMonth() === day.month &&
                       new Date().getFullYear() === day.year
-                        ? "badge badge-primary rounded-full flex items-center justify-center"
-                        : ""
-                    }`}
+                      ? "badge badge-primary rounded-full flex items-center justify-center"
+                      : ""
+                      }`}
                   >
                     {day.day}
                   </span>
@@ -452,9 +446,8 @@ const TaskCalendar: React.FC<TaskCalendarProps> = ({ initialTasks = [] }) => {
                     day.tasks.slice(0, 2).map((task) => (
                       <div
                         key={task.id}
-                        className={`${
-                          priorityClasses[task.priority]
-                        } text-xs p-1 mb-1 rounded truncate text-base-content`}
+                        className={`${priorityClasses[task.priority]
+                          } text-xs p-1 mb-1 rounded truncate text-base-content`}
                       >
                         {task.title}
                       </div>
