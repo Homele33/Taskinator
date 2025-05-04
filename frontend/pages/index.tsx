@@ -2,10 +2,9 @@ import React, { useState, useEffect } from "react";
 import TaskForm, { TaskFormData } from "@/components/taskForm";
 import { Task } from "@/components/tasksTypes";
 import { TaskCard } from "@/components/taskCard";
-import { fetchTasks } from "@/utils/taskUtils";
+import { fetchTasks, createTask } from "@/utils/taskUtils";
 import { FuzzySearchBar } from "@/components/searchBar";
 import NaturalLanguageTaskInput from "@/components/nlpInput";
-
 
 const MainPage: React.FC = () => {
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -27,6 +26,7 @@ const MainPage: React.FC = () => {
 
   const getTasks = async () => {
     try {
+      const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
       const data = await fetchTasks();
       setTasks(data.tasks);
       setError(null);
@@ -39,19 +39,16 @@ const MainPage: React.FC = () => {
   };
 
   const handleCreateTask = async (taskData: TaskFormData) => {
-    const response = await fetch("http://localhost:5000/api/tasks", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(taskData),
-    });
-
-    if (!response.ok) {
-      throw new Error("Failed to create task");
+    try {
+      createTask(taskData)
+    }
+    catch (error) {
+      console.error("Error", error);
+    }
+    finally {
+      getTasks();
     }
 
-    getTasks();
   };
 
   const handleUpdateTask = async (taskId: string, taskData: TaskFormData) => {
@@ -139,7 +136,7 @@ const MainPage: React.FC = () => {
             setIsFormOpen(false);
             setEditingTask(undefined);
           }}
-          onSubmit={handleFormSubmit}
+          onSubmit={handleCreateTask}
         />
       </div>
 

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Task } from './tasksTypes';
+import { createNlpTask } from '@/utils/taskUtils';
 
 interface NaturalLanguageInputProps {
   onTaskCreated: (task: Task) => void;
@@ -20,20 +21,15 @@ const NaturalLanguageTaskInput: React.FC<NaturalLanguageInputProps> = ({ onTaskC
     setErrorMessage('');
 
     try {
-      const response = await fetch(`http://localhost:5000/ai/parseTask`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ text: inputText }),
-      });
 
-      if (!response.ok) {
+      const response = createNlpTask(inputText)
+
+      if (!response) {
         const errorData = await response.json();
         throw new Error(errorData.message || 'Failed to create task');
       }
 
-      const newTask = await response.json();
+      const newTask = await response;
       onTaskCreated(newTask);
       setInputText('');
     } catch (error) {

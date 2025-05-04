@@ -5,6 +5,7 @@ export interface SubtaskFormData {
   title: string;
   description: string;
   parentId: string;
+  isDone: false;
 }
 
 interface SubtaskFormProps {

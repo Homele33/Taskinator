@@ -1,13 +1,15 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, g
 from config import db
 from models import SubTask, Task
+from services.auth_middleware import auth_required
 
 subtasks_bp = Blueprint("subtasks", __name__)
 
 
 @subtasks_bp.route("/<int:task_id>", methods=["POST"])  # add a subtask to a task
+@auth_required
 def add_subtask(task_id):
-    task = Task.query.get(task_id)
+    task = Task.query.filter_by(user_id=g.user.id, id=task_id).first()
 
     if not task:
         return jsonify({"message": "Task not found"}), 404
@@ -22,9 +24,9 @@ def add_subtask(task_id):
 @subtasks_bp.route(
     "/<int:task_id>/<int:subtask_id>", methods=["DELETE"]
 )  # delete a subtask
+@auth_required
 def delete_subtask(task_id, subtask_id):
-    task = Task.query.get(task_id)
-    subtask = SubTask.query.get(subtask_id)
+    subtask = SubTask.query.filter_by(task_id=task_id, id=subtask_id).first_or_404()
 
     if not task or not subtask:
         return jsonify({"message": "Task or subtask not found"}), 404
@@ -38,9 +40,10 @@ def delete_subtask(task_id, subtask_id):
 @subtasks_bp.route(
     "/<int:task_id>/<int:subtask_id>", methods=["PATCH"]
 )  # toggle a subtask
+@auth_required
 def toggle_subtask(task_id, subtask_id):
-    task = Task.query.get(task_id)
-    subtask = SubTask.query.get(subtask_id)
+    task = Task.query.filter_by(user_id=g.user.id, id=task_id).first()
+    subtask = task.sub_tasks
 
     if not task or not subtask:
         return jsonify({"message": "Task or subtask not found"}), 404
@@ -52,7 +55,8 @@ def toggle_subtask(task_id, subtask_id):
 
 
 @subtasks_bp.route("/<int:task_id>", methods=["GET"])
+@auth_required
 # get all subtasks of a task
 def get_subtasks(task_id):
-    task = Task.query.get(task_id)
+    task = Task.query.filter_by(user_id=g.user.id, id=task_id).first_or_404()
     return jsonify([sub_task.to_json() for sub_task in task.sub_tasks])

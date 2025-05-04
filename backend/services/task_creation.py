@@ -4,7 +4,7 @@ from config import db
 from models import Task
 
 
-def create_task(title, description=None, due_date=None):
+def create_task(title, user_id, description=None, due_date=None):
     if due_date:
         due_date = datetime.fromisoformat(due_date)
     new_task = Task(
@@ -13,6 +13,7 @@ def create_task(title, description=None, due_date=None):
         due_date=due_date,
         status="TODO",
         priority="MEDIUM",
+        user_id=user_id,
     )
     try:
         db.session.add(new_task)
