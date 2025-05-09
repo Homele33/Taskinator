@@ -28,7 +28,7 @@ const LoginPage: React.FC = () => {
 
     try {
       await loginWithEmail(email, password);
-      router.push('/dashboard');
+      router.push('/');
     } catch (err: any) {
       console.error('Login error:', err);
       // Handle different Firebase error codes
@@ -50,7 +50,7 @@ const LoginPage: React.FC = () => {
 
     try {
       await loginWithGoogle();
-      router.push('/dashboard');
+      router.push('/');
     } catch (err: any) {
       console.error('Google login error:', err);
       setError('Failed to log in with Google. Please try again.');
@@ -60,14 +60,14 @@ const LoginPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-base-100 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
       <Head>
         <title>Login | Task Manager</title>
       </Head>
-      <div className="max-w-md w-full bg-white rounded-lg shadow-md p-8">
+      <div className="max-w-md w-full bg-base-300 rounded-lg shadow-md p-8">
         <div className="text-center">
-          <h2 className="text-3xl font-extrabold text-gray-900">Sign in to your account</h2>
-          <p className="mt-2 text-sm text-gray-600">
+          <h2 className="text-3xl font-extrabold text-primary">Sign in to your account</h2>
+          <p className="mt-2 text-sm text-accent">
             Or{' '}
             <Link href="/register" className="font-medium text-primary hover:text-primary-focus">
               create a new account
@@ -132,7 +132,7 @@ const LoginPage: React.FC = () => {
                 type="checkbox"
                 className="checkbox checkbox-primary h-4 w-4"
               />
-              <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-900">
+              <label htmlFor="remember-me" className="ml-2 block text-sm text-accent">
                 Remember me
               </label>
             </div>
@@ -161,7 +161,7 @@ const LoginPage: React.FC = () => {
               <div className="w-full border-t border-gray-300"></div>
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="px-2 bg-white text-gray-500">Or continue with</span>
+              <span className="px-2 bg-base-100 text-primary">Or continue with</span>
             </div>
           </div>
 

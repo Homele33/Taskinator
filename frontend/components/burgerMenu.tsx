@@ -1,6 +1,8 @@
 import React from 'react';
-import { Home, Settings, Calendar } from 'lucide-react';
+import { Home, Settings, Calendar, LogOutIcon } from 'lucide-react';
 import Link from 'next/link';
+import { logoutUser } from '@/firebase/firebaseClient';
+import { useRouter } from 'next/router';
 
 // Define menu item type
 interface MenuItem {
@@ -16,6 +18,7 @@ interface BurgerMenuProps {
 
 const BurgerMenu: React.FC<BurgerMenuProps> = ({ className = '' }) => {
   // Define menu items
+  const router = useRouter()
   const menuItems: MenuItem[] = [
     {
       name: 'Home',
@@ -57,6 +60,8 @@ const BurgerMenu: React.FC<BurgerMenuProps> = ({ className = '' }) => {
               </Link>
             </li>
           ))}
+          <li>
+            <button className='btn gap-2 bg-base-100 btn-ghost text-error' onClick={() => { logoutUser(); router.push("/login") }}> <LogOutIcon size={20} />Logout</button></li>
         </ul>
       </div>
     </div>

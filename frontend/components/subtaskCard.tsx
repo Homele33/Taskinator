@@ -57,7 +57,7 @@ export const SubtaskCard: React.FC<SubtaskCardProps> = ({
   return (
     <div>
       <div
-        className={`card scale-90  ${subtask.isDone ? "bg-success-content" : "bg-primary-content"
+        className={`card scale-90  ${subtask.isDone ? "bg-success-content" : "bg-base-300"
           }`}>
         <div className="card-body">
           <div className="flex justify-between items-start">

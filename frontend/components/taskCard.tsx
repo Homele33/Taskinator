@@ -112,7 +112,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({
   return (
     <div className={``} data-theme="">
       <div
-        className={`${getCardStyles()} bg-primary-content`}>
+        className={`${getCardStyles()} bg-base-300`}>
         <div className="card-body">
           <div className="flex justify-between items-start">
             <div className="flex items-center gap-2">

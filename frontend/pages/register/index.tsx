@@ -18,7 +18,7 @@ const RegisterPage: React.FC = () => {
   // Redirect if already logged in
   useEffect(() => {
     if (user) {
-      router.push('/dashboard');
+      router.push('/');
     }
   }, [user, router]);
 
@@ -76,14 +76,14 @@ const RegisterPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
       <Head>
         <title>Register | Task Manager</title>
       </Head>
-      <div className="max-w-md w-full bg-white rounded-lg shadow-md p-8">
+      <div className="max-w-md w-full bg-base-300 rounded-lg shadow-md p-8">
         <div className="text-center">
-          <h2 className="text-3xl font-extrabold text-gray-900">Create your account</h2>
-          <p className="mt-2 text-sm text-gray-600">
+          <h2 className="text-3xl font-extrabold text-accent">Create your account</h2>
+          <p className="mt-2 text-sm ">
             Or{' '}
             <Link href="/login" className="font-medium text-primary hover:text-primary-focus">
               sign in to your existing account
@@ -158,7 +158,7 @@ const RegisterPage: React.FC = () => {
           </div>
 
           <div>
-            <p className="text-xs text-gray-500">
+            <p className="text-xs">
               By registering, you agree to our{' '}
               <Link href="/terms" className="font-medium text-primary hover:text-primary-focus">
                 Terms of Service
@@ -188,7 +188,7 @@ const RegisterPage: React.FC = () => {
               <div className="w-full border-t border-gray-300"></div>
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="px-2 bg-white text-gray-500">Or continue with</span>
+              <span className="px-2 bg-base-100 text-primary">Or continue with</span>
             </div>
           </div>
 
