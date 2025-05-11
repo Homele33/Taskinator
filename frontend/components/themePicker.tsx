@@ -5,10 +5,10 @@ import useTheme from "@/utils/themeUtils";
 // theme picker
 
 export default function ThemePicker() {
-  const [userTheme, setUserTheme] = useState("default");
+  const [userTheme, setUserTheme] = useState("dark");
 
   useEffect(() => {
-    const theme = localStorage.getItem("theme") || "default";
+    const theme = localStorage.getItem("theme") || "dark";
     console.log("Theme from localStorage:", theme);
     setUserTheme(theme);
     useTheme()
@@ -35,7 +35,7 @@ export default function ThemePicker() {
             name="theme-dropdown"
             className="theme-controller  btn btn-sm btn-block btn-ghost justify-start"
             aria-label="Default"
-            value="default"
+            value="dark"
             onChange={handleThemeChange}
           />
         </li>
