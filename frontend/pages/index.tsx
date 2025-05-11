@@ -117,7 +117,7 @@ const MainPage: React.FC = () => {
   return (
     <div className="container mx-auto p-4">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Tasks</h1>
+        <h1 className="text-2xl font-bold text-primary">Tasks</h1>
         <FuzzySearchBar tasks={tasks} onTaskSelect={handleTaskSelect} />
         <button
           className="btn btn-primary"
@@ -140,6 +140,7 @@ const MainPage: React.FC = () => {
         />
       </div>
 
+      <NaturalLanguageTaskInput onTaskCreated={getTasks} />
       {tasks.length === 0 ? (
         <div className="text-center py-8">
           <p className="text-gray-500">
@@ -158,7 +159,6 @@ const MainPage: React.FC = () => {
           ))}
         </div>
       )}
-      <NaturalLanguageTaskInput onTaskCreated={getTasks} />
     </div>
   );
 };

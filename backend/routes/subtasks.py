@@ -26,11 +26,10 @@ def add_subtask(task_id):
 )  # delete a subtask
 @auth_required
 def delete_subtask(task_id, subtask_id):
-    subtask = SubTask.query.filter_by(task_id=task_id, id=subtask_id).first_or_404()
+    subtask = SubTask.query.filter_by(task_id=task_id, id=subtask_id).first()
 
-    if not task or not subtask:
-        return jsonify({"message": "Task or subtask not found"}), 404
-
+    if not subtask:
+        return jsonify({"message": "subtask not found"}), 404
     db.session.delete(subtask)
     db.session.commit()
 
@@ -42,10 +41,9 @@ def delete_subtask(task_id, subtask_id):
 )  # toggle a subtask
 @auth_required
 def toggle_subtask(task_id, subtask_id):
-    task = Task.query.filter_by(user_id=g.user.id, id=task_id).first()
-    subtask = task.sub_tasks
+    subtask = SubTask.query.filter_by(task_id=task_id, id=subtask_id).first()
 
-    if not task or not subtask:
+    if not subtask:
         return jsonify({"message": "Task or subtask not found"}), 404
 
     subtask.is_done = not subtask.is_done

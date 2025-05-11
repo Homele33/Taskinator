@@ -1,6 +1,6 @@
 import { Subtask } from "./tasksTypes";
 import { Pencil, Trash2, Check, EllipsisVertical } from "lucide-react";
-
+import { deleteSubtask, toggleSubtask } from "@/utils/taskUtils";
 
 interface SubtaskCardProps {
   subtask: Subtask;
@@ -9,14 +9,6 @@ interface SubtaskCardProps {
   onRefresh: () => void;
 }
 
-// const getCardStyles = (isDone: boolean) => {
-//   const className = "card hover:shadow-xl scale-90 opacity-90";
-//   if (!isDone) {
-//     return `${className}  bg-primary `;
-//   }
-//   return `${className} bg-green-900 `;
-// };
-
 export const SubtaskCard: React.FC<SubtaskCardProps> = ({
   subtask,
 
@@ -24,16 +16,9 @@ export const SubtaskCard: React.FC<SubtaskCardProps> = ({
   parentId,
 }) => {
   const handleDeleteSubtask = async (id: string) => {
-    const response = await fetch(
-      `http://localhost:5000/api/tasks/subtasks/${parentId}/${id}`,
-      {
-        method: "DELETE",
-      }
-    );
 
-    if (!response.ok) {
-      throw new Error("Failed to delete subtask");
-    }
+    await deleteSubtask(parentId, id);
+
     onRefresh();
   };
 
@@ -42,22 +27,14 @@ export const SubtaskCard: React.FC<SubtaskCardProps> = ({
   };
 
   const handleComplete = async (id: string) => {
-    const response = await fetch(
-      `http://localhost:5000/api/tasks/subtasks/${parentId}/${id}`,
-      {
-        method: "PATCH",
-      }
-    );
-    if (!response.ok) {
-      throw new Error("Failed to toggle subtask");
-    }
+    await toggleSubtask(parentId, id)
     onRefresh();
   };
 
   return (
     <div>
       <div
-        className={`card scale-90  ${subtask.isDone ? "bg-success-content" : "bg-base-300"
+        className={`card scale-90  ${subtask.isDone ? "bg-success" : "bg-base-300"
           }`}>
         <div className="card-body">
           <div className="flex justify-between items-start">

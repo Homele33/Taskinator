@@ -7,7 +7,7 @@ export const fetchTasks = async (): Promise<{ tasks: Task[] }> => {
     const response = await apiClient.get("/tasks");
     return response.data;
   }
-  catch (error) {
+  catch (error: any) {
     console.error("Error fetching tasks:", error);
     if (error.response) {
       console.error("Error status:", error.response.status);
@@ -60,4 +60,28 @@ export const addSubtask = async (taskId: string, subtaskData: Omit<Subtask, "id"
     console.error(error)
   }
 
+}
+
+export const deleteSubtask = async (taskId: string, subtasksId: string): Promise<void> => {
+  try {
+    const response = await apiClient.delete(`/tasks/subtasks/${taskId}/${subtasksId}`)
+    if (response.status != 200) {
+      console.log(response.data)
+    }
+  }
+  catch (error) {
+    console.error(error);
+  }
+}
+
+export const toggleSubtask = async (taskId: string, subtaskId: string): Promise<void> => {
+  try {
+    const response = await apiClient.patch(`/tasks/subtasks/${taskId}/${subtaskId}`)
+    if (response.status != 200) {
+
+    }
+  }
+  catch {
+    console.error("Error toggeling subtask")
+  }
 }
