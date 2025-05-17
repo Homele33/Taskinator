@@ -56,5 +56,9 @@ def toggle_subtask(task_id, subtask_id):
 @auth_required
 # get all subtasks of a task
 def get_subtasks(task_id):
-    task = Task.query.filter_by(user_id=g.user.id, id=task_id).first_or_404()
+    task = Task.query.filter_by(user_id=g.user.id, id=task_id).first()
+
+    # in case we dont find the taks
+    if not task:
+        return jsonify({"message": "Task Not Found"}), 404
     return jsonify([sub_task.to_json() for sub_task in task.sub_tasks])
