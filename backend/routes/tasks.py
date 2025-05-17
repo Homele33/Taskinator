@@ -3,7 +3,6 @@ from models import Task, SubTask
 from datetime import datetime
 from config import db
 from sqlalchemy.sql import null
-
 from services import auth_middleware
 from services.auth_middleware import auth_required
 
@@ -15,7 +14,7 @@ tasks_bp = Blueprint("tasks", __name__)
 def get_tasks():
     tasks = Task.query.filter_by(user_id=g.user.id).all()
     json_tasks = list(map(lambda x: x.to_json(), tasks))
-    return jsonify({"tasks": json_tasks})
+    return jsonify({"tasks": json_tasks}), 200
 
 
 @tasks_bp.route("", methods=["POST"])
@@ -77,11 +76,13 @@ def update_task(task_id):
 
     due_date = data.get("dueDate")
     if due_date != "" and due_date:
-        task.due_date = date.fromisoformat(due_date)
+        task.due_date = datetime.fromisoformat(due_date)
     else:
         task.due_date = null()
-
-    db.session.commit()
+    try:
+        db.session.commit()
+    except Exception as e:
+        return jsonify({"message": str(e)}), 401
 
     return jsonify({"message": "Task updated"}), 200
 
@@ -97,9 +98,11 @@ def delete_task(task_id):
 
     # for subtask in task.sub_tasks:
     # db.session.delete(subtask)
-
-    db.session.delete(task)
-    db.session.commit()
+    try:
+        db.session.delete(task)
+        db.session.commit()
+    except Exception as e:
+        return jsonify({"message": str(e)}), 401
 
     return jsonify({"message": "Task deleted"}), 200
 
@@ -112,7 +115,7 @@ def get_task(task_id):
     if not task:
         return jsonify({"message": "Task not found"}), 404
 
-    return jsonify(task.to_json())
+    return jsonify(task.to_json()), 200
 
 
 @tasks_bp.route("/status/<int:task_id>", methods=["PATCH"])  # change task status
@@ -125,7 +128,10 @@ def toggle_task(task_id):
     if not task:
         return jsonify({"message": "Task not found"}), 404
 
-    task.status = status
-    db.session.commit()
+    try:
+        task.status = status
+        db.session.commit()
+    except Exception as e:
+        return jsonify({"message": str(e)}), 401
 
     return jsonify({"message": "Task status changed"}), 200
