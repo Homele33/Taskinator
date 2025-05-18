@@ -22,6 +22,7 @@ def get_tasks():
 # create a task
 def create_task():
     title = request.json.get("title")
+    task_type = request.json.get("task_type")
     description = request.json.get("description")
     due_date = request.json.get("dueDate")
     if due_date:
@@ -36,6 +37,7 @@ def create_task():
 
     new_task = Task(
         title=title,
+        task_type=task_type,
         description=description,
         due_date=due_date,
         due_time=due_time,
@@ -72,6 +74,7 @@ def update_task(task_id):
 
     data = request.json
     task.title = data.get("title", task.title)
+    task.task_type = data.get("task_type", task.task_type)
     task.description = data.get("description", task.description)
 
     due_date = data.get("dueDate")

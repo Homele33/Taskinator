@@ -26,6 +26,7 @@ const NaturalLanguageTaskInput: React.FC<NaturalLanguageInputProps> = ({ onTaskC
 
       if (!response) {
         throw new Error('Failed to create task');
+
       }
 
       const newTask = await response;

@@ -35,6 +35,11 @@ const BurgerMenu: React.FC<BurgerMenuProps> = ({ className = '' }) => {
       path: '/settings',
       icon: <Settings size={20} />
     },
+    {
+      name: 'Questions',
+      path: '/questions',
+      icon: <Settings size={20} />
+    },
   ];
 
   return (

@@ -1,6 +1,7 @@
 export interface Task {
   id: string;
   title: string;
+  task_type: "Meeting" | "Training" | "Studies";
   description?: string;
   status: "TODO" | "IN_PROGRESS" | "COMPLETED";
   priority: "LOW" | "MEDIUM" | "HIGH";

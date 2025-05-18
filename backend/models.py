@@ -48,6 +48,7 @@ class Task(db.Model):
     __tablename__ = "task"
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(100), unique=False, nullable=False)
+    task_type = db.Column(db.Enum("Meeting", "Training", "Studies"))
     description = db.Column(db.String(200), nullable=True, unique=False)
     is_done = db.Column(db.Boolean, default=False, nullable=False, unique=False)
     due_date = db.Column(db.DateTime, nullable=True, unique=False)
@@ -65,6 +66,7 @@ class Task(db.Model):
         return {
             "id": self.id,
             "title": self.title,
+            "task_type": self.task_type,
             "description": self.description,
             "status": self.status,
             "priority": self.priority,
@@ -79,3 +81,21 @@ class Task(db.Model):
     def add_sub_task(self, sub_task):
         self.sub_tasks.append(sub_task)
         db.session.commit()
+
+
+class UserPreferences(db.Model):
+    __tablename__ = "user_preferences"
+    id = db.Column(db.Integer, primary_key=True)
+    answers = db.Column(db.JSON, nullable=True)
+    preference_time = db.Column(db.String(20), nullable=True)
+    preferred_days = db.Column(db.JSON, nullable=True)
+    preferred_days_by_task = db.Column(db.JSON, nullable=True)
+
+    def to_json(self):
+        return {
+            "id": self.id,
+            "answers": self.answers,
+            "preference_time": self.preference_time,
+            "preferred_days": self.preferred_days,
+            "preferred_days_by_task": self.preferred_days_by_task,
+        }
