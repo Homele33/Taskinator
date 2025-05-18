@@ -20,7 +20,7 @@ const NaturalLanguageTaskInput: React.FC<NaturalLanguageInputProps> = ({ onTaskC
     setErrorMessage('');
 
     try {
-      const response = await fetch(`http://localhost:5000/ai/parseTask`, {
+      const response = await fetch(`http://localhost:5000/api/ai/parseTask`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
