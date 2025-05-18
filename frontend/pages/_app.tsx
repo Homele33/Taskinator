@@ -16,7 +16,7 @@ function MyApp({ Component, pageProps }: AppProps) {
           <title>Task Manager App</title>
           <meta name="description" content="A smart assistant to help with task management and scheduling" />
           <meta name="viewport" content="width=device-width, initial-scale=1" />
-          <link rel="icon" href="/favicon.ico" />
+          <link rel="icon" href="/favicon.png" />
         </Head>
         <Component {...pageProps} />
       </AuthProvider>

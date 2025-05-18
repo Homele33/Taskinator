@@ -1,6 +1,6 @@
 export const firebaseConfig = {
 
-  apiKey: "AIzaSyCzmOajiET5r6hCcQiKIIJl8AcJCXxrvPM",
+  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
 
   authDomain: "taskinator-7ace3.firebaseapp.com",
 
