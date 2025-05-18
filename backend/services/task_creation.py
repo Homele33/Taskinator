@@ -9,6 +9,7 @@ def create_task(title, description=None, due_date=None):
         due_date = datetime.fromisoformat(due_date)
     new_task = Task(
         title=title,
+        task_type="Meeting",
         description=description,
         due_date=due_date,
         status="TODO",
