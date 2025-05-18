@@ -2,10 +2,9 @@ import React, { useState, useEffect } from "react";
 import TaskForm, { TaskFormData } from "@/components/taskForm";
 import { Task } from "@/components/tasksTypes";
 import { TaskCard } from "@/components/taskCard";
-import { fetchTasks } from "@/utils/taskUtils";
+import { fetchTasks, createTask } from "@/utils/taskUtils";
 import { FuzzySearchBar } from "@/components/searchBar";
 import NaturalLanguageTaskInput from "@/components/nlpInput";
-
 
 const MainPage: React.FC = () => {
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -39,44 +38,19 @@ const MainPage: React.FC = () => {
   };
 
   const handleCreateTask = async (taskData: TaskFormData) => {
-    const response = await fetch("http://localhost:5000/api/tasks", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(taskData),
-    });
-
-    if (!response.ok) {
-      throw new Error("Failed to create task");
+    try {
+      createTask(taskData)
+    }
+    catch (error) {
+      console.error("Error", error);
+    }
+    finally {
+      getTasks();
     }
 
-    getTasks();
   };
 
-  const handleUpdateTask = async (taskId: string, taskData: TaskFormData) => {
-    const response = await fetch(`http://localhost:5000/api/tasks/${taskId}`, {
-      method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(taskData),
-    });
 
-    if (!response.ok) {
-      throw new Error("Failed to update task");
-    }
-
-    getTasks();
-  };
-
-  const handleFormSubmit = async (taskData: TaskFormData) => {
-    if (editingTask) {
-      await handleUpdateTask(editingTask.id, taskData);
-    } else {
-      await handleCreateTask(taskData);
-    }
-  };
 
   const handleEditTask = (task: Task) => {
     setEditingTask(task);
@@ -120,7 +94,7 @@ const MainPage: React.FC = () => {
   return (
     <div className="container mx-auto p-4">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Tasks</h1>
+        <h1 className="text-2xl font-bold text-primary">Tasks</h1>
         <FuzzySearchBar tasks={tasks} onTaskSelect={handleTaskSelect} />
         <button
           className="btn btn-primary"
@@ -139,10 +113,11 @@ const MainPage: React.FC = () => {
             setIsFormOpen(false);
             setEditingTask(undefined);
           }}
-          onSubmit={handleFormSubmit}
+          onSubmit={handleCreateTask}
         />
       </div>
 
+      <NaturalLanguageTaskInput onTaskCreated={getTasks} />
       {tasks.length === 0 ? (
         <div className="text-center py-8">
           <p className="text-gray-500">
@@ -161,7 +136,6 @@ const MainPage: React.FC = () => {
           ))}
         </div>
       )}
-      <NaturalLanguageTaskInput onTaskCreated={getTasks} />
     </div>
   );
 };

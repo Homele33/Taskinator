@@ -136,7 +136,8 @@ const TaskCalendar: React.FC<TaskCalendarProps> = ({ initialTasks = [] }) => {
         const dateString: string = `${calDay.year}-${String(
           calDay.month + 1
         ).padStart(2, "0")}-${String(calDay.day).padStart(2, "0")}`;
-        calDay.tasks = tasks.filter((task) => task.dueDate === dateString);
+
+        calDay.tasks = tasks.filter((task) => task.dueDate?.split("T")[0] === dateString);
       });
 
       setCalendar(calendarDays);
@@ -275,7 +276,7 @@ const TaskCalendar: React.FC<TaskCalendarProps> = ({ initialTasks = [] }) => {
               Due Date
             </h5>
             <p className="mt-1">
-              {new Date(task.dueDate).toLocaleDateString()}
+              {new Date(task.dueDate).toLocaleString()}
             </p>
           </div>
         )}
@@ -352,6 +353,9 @@ const TaskCalendar: React.FC<TaskCalendarProps> = ({ initialTasks = [] }) => {
                       <span className={`${statusClasses[task.status]} ml-2`}>
                         { }
                       </span>
+                      {task.dueDate && (
+                        <span>{new Date(task.dueDate).toLocaleTimeString()}</span>
+                      )}
                     </div>
                   </button>
                 </li>

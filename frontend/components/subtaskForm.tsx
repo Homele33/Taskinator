@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { Subtask } from "./tasksTypes";
 
 export interface SubtaskFormData {
   title: string;
   description: string;
   parentId: string;
+  isDone: boolean; // Changed from 'false' to 'boolean'
 }
 
 interface SubtaskFormProps {
@@ -22,10 +23,11 @@ const SubtaskForm: React.FC<SubtaskFormProps> = ({
   onClose,
   onSubmit,
 }) => {
-  const defaultData = {
+  const defaultData: SubtaskFormData = {
     title: "",
     description: "",
     parentId: parentId,
+    isDone: false,
   };
   const [formData, setFormData] = useState<SubtaskFormData>(defaultData);
   const [loading, setLoading] = useState(false);
@@ -37,6 +39,13 @@ const SubtaskForm: React.FC<SubtaskFormProps> = ({
         title: subtask.title,
         description: subtask.description || "",
         parentId: subtask.parentId,
+        isDone: subtask.isDone, // Add this field
+      });
+    } else {
+      // Reset to default when not editing
+      setFormData({
+        ...defaultData,
+        parentId, // Use the current parentId
       });
     }
   }, [subtask, parentId]);
@@ -104,7 +113,6 @@ const SubtaskForm: React.FC<SubtaskFormProps> = ({
               <input
                 type="text"
                 name="title"
-                defaultValue={subtask?.title}
                 className="w-full border rounded-md px-3 py-2 bg-base-200"
                 value={formData.title}
                 onChange={(e) =>
@@ -119,7 +127,6 @@ const SubtaskForm: React.FC<SubtaskFormProps> = ({
               </label>
               <textarea
                 name="description"
-                defaultValue={subtask?.description}
                 value={formData.description}
                 onChange={(e) =>
                   setFormData({ ...formData, description: e.target.value })

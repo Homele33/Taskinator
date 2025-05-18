@@ -9,6 +9,8 @@ import {
   EllipsisVertical,
   Bot,
 } from "lucide-react";
+import { deleteTask, addSubtask } from "@/utils/taskUtils";
+import apiClient from "@/api/axiosClient";
 
 interface TaskCardProps {
   task: Task;
@@ -44,14 +46,8 @@ export const TaskCard: React.FC<TaskCardProps> = ({
   const fetchSubtasks = async () => {
     setIsLoadingSubtasks(true);
     try {
-      const response = await fetch(
-        `http://localhost:5000/api/tasks/subtasks/${task.id}`
-      );
-      if (!response.ok) {
-        throw new Error("Failed to fetch subtasks");
-      }
-      const data = await response.json();
-      setSubtasks(data);
+      const response = await apiClient.get(`/tasks/subtasks/${task.id}`)
+      setSubtasks(response.data);
     } catch (err) {
       console.error("Error fetching subtasks:", err);
     } finally {
@@ -74,32 +70,18 @@ export const TaskCard: React.FC<TaskCardProps> = ({
 
 
   const handleAddSubtask = async (subtask: SubtaskFormData) => {
-    const response = await fetch(
-      `http://localhost:5000/api/tasks/subtasks/${subtask.parentId}`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(subtask),
-      }
-    );
-    if (!response.ok) {
-      throw new Error("Failed to create subtask");
-    }
-    fetchSubtasks();
-
+    const response = addSubtask(task.id, subtask)
+    await response;
+    fetchSubtasks()
     setIsExpanded(true);
   };
 
   const handleDeleteTask = async (id: string) => {
-    const response = await fetch(`http://localhost:5000/api/tasks/${id}`, {
-      method: "DELETE",
-    });
-
-    if (!response.ok) {
-      throw new Error("Failed to delete task");
+    try {
+      const response = deleteTask(id);
+      await response
     }
+    catch (error) { console.error("error:", error) }
     onRefresh();
   };
 
@@ -133,7 +115,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({
   return (
     <div className={``} data-theme="">
       <div
-        className={`${getCardStyles()} bg-primary-content`}>
+        className={`${getCardStyles()} bg-base-300`}>
         <div className="card-body">
           <div className="flex justify-between items-start">
             <div className="flex items-center gap-2">
