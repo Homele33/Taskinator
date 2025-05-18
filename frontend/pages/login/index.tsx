@@ -29,16 +29,8 @@ const LoginPage: React.FC = () => {
     try {
       await loginWithEmail(email, password);
       router.push('/');
-    } catch (err: any) {
+    } catch (err) {
       console.error('Login error:', err);
-      // Handle different Firebase error codes
-      if (err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password') {
-        setError('Invalid email or password');
-      } else if (err.code === 'auth/too-many-requests') {
-        setError('Too many failed login attempts. Please try again later.');
-      } else {
-        setError('Failed to log in. Please try again.');
-      }
     } finally {
       setIsLoading(false);
     }
@@ -51,7 +43,7 @@ const LoginPage: React.FC = () => {
     try {
       await loginWithGoogle();
       router.push('/');
-    } catch (err: any) {
+    } catch (err) {
       console.error('Google login error:', err);
       setError('Failed to log in with Google. Please try again.');
     } finally {

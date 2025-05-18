@@ -1,5 +1,4 @@
-# Use Python 3.11 slim image as base
-FROM python:3.11-slim
+FROM python:3.11-bullseye
 
 # Set working directory
 WORKDIR /app
@@ -7,14 +6,7 @@ WORKDIR /app
 # Set environment variables
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
-    FLASK_APP=main.py \
     FLASK_ENV=development
-
-# Install system dependencies
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    gcc \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
 
 # Install Python dependencies
 COPY requirements.txt .
@@ -27,5 +19,5 @@ COPY . .
 EXPOSE 5000
 
 # Command to run the application
-CMD ["flask", "run", "--host=0.0.0.0"]
+CMD ["python", "main.py"]
 

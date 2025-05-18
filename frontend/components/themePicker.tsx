@@ -7,12 +7,14 @@ import useTheme from "@/utils/themeUtils";
 export default function ThemePicker() {
   const [userTheme, setUserTheme] = useState("default");
 
+  const applyTheme = useTheme();
+
   useEffect(() => {
     const theme = localStorage.getItem("theme") || "default";
-    console.log("Theme from localStorage:", theme);
     setUserTheme(theme);
-    useTheme()
-  }, []);
+
+    applyTheme(userTheme)
+  }, [userTheme, applyTheme]);
 
   const handleThemeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const theme = e.target.value;

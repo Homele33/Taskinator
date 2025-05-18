@@ -77,7 +77,10 @@ export const TaskCard: React.FC<TaskCardProps> = ({
   };
 
   const handleDeleteTask = async (id: string) => {
-    try { const response = deleteTask(id); }
+    try {
+      const response = deleteTask(id);
+      await response
+    }
     catch (error) { console.error("error:", error) }
     onRefresh();
   };

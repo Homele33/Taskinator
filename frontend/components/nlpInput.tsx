@@ -7,9 +7,9 @@ interface NaturalLanguageInputProps {
 }
 
 const NaturalLanguageTaskInput: React.FC<NaturalLanguageInputProps> = ({ onTaskCreated }) => {
-  const [inputText, setInputText] = useState('');
+  const [inputText, setInputText] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [errorMessage, setErrorMessage] = useState('');
+  const [errorMessage, setErrorMessage] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -18,23 +18,22 @@ const NaturalLanguageTaskInput: React.FC<NaturalLanguageInputProps> = ({ onTaskC
     if (!inputText.trim()) return;
 
     setIsLoading(true);
-    setErrorMessage('');
+    setErrorMessage("");
 
     try {
 
       const response = createNlpTask(inputText)
 
       if (!response) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to create task');
+        throw new Error('Failed to create task');
       }
 
       const newTask = await response;
       onTaskCreated(newTask);
-      setInputText('');
+      setInputText("");
     } catch (error) {
       console.error('Error creating task:', error);
-      setErrorMessage(error instanceof Error ? error.message : 'An unknown error occurred');
+      setErrorMessage(error instanceof Error ? error.message : `An unknown error occurred`);
     } finally {
       setIsLoading(false);
     }
@@ -53,8 +52,8 @@ const NaturalLanguageTaskInput: React.FC<NaturalLanguageInputProps> = ({ onTaskC
         <h3 className="text-lg font-medium mb-2">Add Task Quickly</h3>
         <p className="text-sm mb-3 text-base-content/80">
           Type your task in natural language. For example:
-          "High priority meeting with John about project tomorrow at 3pm" or
-          "Finish report by Friday"
+          &ldquo;High priority meeting with John about project tomorrow at 3pm&rdquo; or
+          &ldquo;Finish report by Friday&rdquo;
         </p>
 
         <form onSubmit={handleSubmit} className="relative">

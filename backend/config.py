@@ -6,7 +6,9 @@ import firebase_admin
 from firebase_admin import credentials, auth
 
 app = Flask(__name__)
-CORS(app)
+
+# Configure CORS to allow requests from frontend
+CORS(app, resources={r"/*": {"origins": "*"}})
 
 env = os.getenv("FLASK_ENV")
 
@@ -14,7 +16,7 @@ env = os.getenv("FLASK_ENV")
 if env == "testing":
     app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///test_database.db"
 else:
-    app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///mydatabase.db"
+    app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///tasks.db"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 db = SQLAlchemy(app)

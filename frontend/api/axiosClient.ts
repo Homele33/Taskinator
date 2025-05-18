@@ -2,7 +2,7 @@
 import axios from 'axios';
 import { getIdToken } from '../firebase/firebaseClient';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+const API_BASE_URL = 'http://localhost:5000/api';
 
 const apiClient = axios.create({
   baseURL: API_BASE_URL,

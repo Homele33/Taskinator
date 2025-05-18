@@ -1,6 +1,11 @@
 "use client";
+import { useCallback } from 'react';
 
 export default function useTheme() {
-  const theme = localStorage.getItem("theme") || "default";
-  document.documentElement.setAttribute("data-theme", theme);
-}
+  const applyTheme = useCallback((theme: string) => {
+    document.documentElement.setAttribute('data-theme', theme);
+    // Or any other logic to apply the theme
+  }, [])
+
+  return applyTheme;
+};

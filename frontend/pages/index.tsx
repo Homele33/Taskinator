@@ -26,7 +26,6 @@ const MainPage: React.FC = () => {
 
   const getTasks = async () => {
     try {
-      const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
       const data = await fetchTasks();
       setTasks(data.tasks);
       setError(null);
@@ -51,29 +50,7 @@ const MainPage: React.FC = () => {
 
   };
 
-  const handleUpdateTask = async (taskId: string, taskData: TaskFormData) => {
-    const response = await fetch(`http://localhost:5000/api/tasks/${taskId}`, {
-      method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(taskData),
-    });
 
-    if (!response.ok) {
-      throw new Error("Failed to update task");
-    }
-
-    getTasks();
-  };
-
-  const handleFormSubmit = async (taskData: TaskFormData) => {
-    if (editingTask) {
-      await handleUpdateTask(editingTask.id, taskData);
-    } else {
-      await handleCreateTask(taskData);
-    }
-  };
 
   const handleEditTask = (task: Task) => {
     setEditingTask(task);

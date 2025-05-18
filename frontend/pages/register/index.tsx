@@ -43,18 +43,8 @@ const RegisterPage: React.FC = () => {
     try {
       await registerWithEmail(email, password);
       router.push('/dashboard');
-    } catch (err: any) {
+    } catch (err) {
       console.error('Registration error:', err);
-      // Handle different Firebase error codes
-      if (err.code === 'auth/email-already-in-use') {
-        setError('This email is already registered');
-      } else if (err.code === 'auth/invalid-email') {
-        setError('Invalid email address');
-      } else if (err.code === 'auth/weak-password') {
-        setError('Password is too weak');
-      } else {
-        setError('Failed to register. Please try again.');
-      }
     } finally {
       setIsLoading(false);
     }
@@ -67,7 +57,7 @@ const RegisterPage: React.FC = () => {
     try {
       await loginWithGoogle();
       router.push('/dashboard');
-    } catch (err: any) {
+    } catch (err) {
       console.error('Google sign up error:', err);
       setError('Failed to sign up with Google. Please try again.');
     } finally {
