@@ -37,7 +37,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     // Use the listener from firebaseClient.ts to avoid re-initialization
     const unsubscribe = onAuthStateChangedListener(async (authUser: User | null) => {
-      console.log("Auth state changed:", authUser ? "User logged in" : "No user");
       setUser(authUser);
 
       if (authUser) {

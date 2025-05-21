@@ -45,7 +45,7 @@ const BurgerMenu: React.FC<BurgerMenuProps> = ({ className = '' }) => {
   return (
     <div className={`fixed top-4 left-4 z-50 ${className}`}>
       {/* Using DaisyUI dropdown component */}
-      <div className="dropdown">
+      <div className="dropdown" data-testid="burger-menu">
         {/* Burger button as dropdown trigger */}
         <label tabIndex={0} className="btn btn-ghost btn-circle text-primary">
           <div className="w-6 flex flex-col gap-1">
@@ -66,7 +66,10 @@ const BurgerMenu: React.FC<BurgerMenuProps> = ({ className = '' }) => {
             </li>
           ))}
           <li>
-            <button className='btn gap-2 bg-base-100 btn-ghost text-error' onClick={() => { logoutUser(); router.push("/login") }}> <LogOutIcon size={20} />Logout</button></li>
+            <button className='btn gap-2 bg-base-100 btn-ghost text-error'
+              onClick={() => { logoutUser(); router.push("/login") }}
+              data-testid="logout-button"
+            > <LogOutIcon size={20} />Logout</button></li>
         </ul>
       </div>
     </div>

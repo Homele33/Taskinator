@@ -119,19 +119,20 @@ const MainPage: React.FC = () => {
 
       <NaturalLanguageTaskInput onTaskCreated={getTasks} />
       {tasks.length === 0 ? (
-        <div className="text-center py-8">
+        <div className="text-center py-8" data-testid="task-list-empty">
           <p className="text-gray-500">
             No tasks found. Create your first task!
           </p>
         </div>
       ) : (
-        <div className="space-y-4">
+        <div className="space-y-4" data-testid="task-list">
           {tasks.map((task) => (
             <TaskCard
               key={task.id}
               task={task}
               onRefresh={getTasks}
               onEdit={handleEditTask}
+              data-testid={`task-item-${task.id}`}
             />
           ))}
         </div>

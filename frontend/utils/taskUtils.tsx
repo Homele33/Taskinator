@@ -8,10 +8,10 @@ export const fetchTasks = async (): Promise<{ tasks: Task[] }> => {
     return response.data;
   }
   catch (error: any) {
-    console.error("Error fetching tasks:", error);
-    if (error.response) {
-      console.error("Error status:", error.response.status);
-      console.error("Error data:", error.response.data);
+    if (error.status === 401) {
+      if (typeof window !== undefined) {
+        window.location.href = "/login"
+      }
     }
     throw error; // Rethrow the error so the component can handle it
   }

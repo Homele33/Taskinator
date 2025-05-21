@@ -29,6 +29,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({
   task,
   onRefresh,
   onEdit,
+  ...props
 }) => {
   const [subtasks, setSubtasks] = useState<Subtask[]>([]);
   const [isExpanded, setIsExpanded] = useState(false);
@@ -113,7 +114,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({
   };
 
   return (
-    <div className={``} data-theme="">
+    <div className={``} {...props}>
       <div
         className={`${getCardStyles()} bg-base-300`}>
         <div className="card-body">
@@ -148,7 +149,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({
                   )}
                 </button>
               )}
-              <h2 className={`${"text-xl"} font-bold  text-primary`}>
+              <h2 className={`${"text-xl"} font-bold  text-primary`} data-testid={`task-title-${task.id}`}>
                 {task.title}
               </h2>
             </div>
@@ -156,7 +157,9 @@ export const TaskCard: React.FC<TaskCardProps> = ({
               <span className={`badge ${getPriorityColor(task.priority)}`}>
                 {task.priority}
               </span>
-              <div className="dropdown  ">
+              <div className="dropdown "
+                data-testid={`task-menu-${task.id}`}
+              >
                 <div>
                   <label
                     tabIndex={0}
@@ -204,6 +207,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({
                     <li>
                       <button
                         onClick={() => handleDeleteTask(task.id)}
+                        data-testid={`task-delete-button-${task.id}`}
                         className="btn btn-ghost btn-md text-error">
                         <Trash2 /> {/* Delete icon*/}
                       </button>
@@ -237,6 +241,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({
                 }[task.status]
                   }`}
                 value={task.status}
+                data-testid={`task-status-${task.id}`}
                 onChange={(e) => handleStatusChange(task.id, e.target.value)}>
                 <option value="TODO">Todo</option>
                 <option value="IN_PROGRESS">In Progress</option>
