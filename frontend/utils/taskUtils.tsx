@@ -10,6 +10,7 @@ export const fetchTasks = async (): Promise<{ tasks: Task[] }> => {
       if (typeof window !== undefined) {
         window.location.href = "/login";
       }
+
     }
     throw error; // Rethrow the error so the component can handle it
   }
@@ -105,3 +106,4 @@ export const submitPreferences = async (preferences: any): Promise<void> => {
     throw error;
   }
 };
+
