@@ -67,8 +67,9 @@ const BurgerMenu: React.FC<BurgerMenuProps> = ({ className = "" }) => {
             <button
               className="btn gap-2 bg-base-100 btn-ghost text-error"
               onClick={() => {
-                logoutUser();
-                router.push("/login");
+                logoutUser().then(() => {
+                  router.push("/login");
+                });
               }}
               data-testid="logout-button"
             >
