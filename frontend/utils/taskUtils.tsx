@@ -5,13 +5,13 @@ export const fetchTasks = async (): Promise<{ tasks: Task[] }> => {
   try {
     const response = await apiClient.get("/tasks");
     return response.data;
-  } catch (error: any) {
+  }
+  catch (error: any) {
     if (error.status === 401) {
-      if (typeof window !== "undefined") {
-        // Redirect to login page if the user is not authenticated
-        window.location.href = "/login";
+      if (typeof window !== undefined) {
+        window.location.href = "/login"
       }
-      return { tasks: [] }; // Return an empty array if the user is not authenticated
+
     }
     throw error; // Rethrow the error so the component can handle it
   }

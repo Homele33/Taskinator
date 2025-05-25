@@ -16,7 +16,6 @@ export const SubtaskCard: React.FC<SubtaskCardProps> = ({
   parentId,
 }) => {
   const handleDeleteSubtask = async (id: string) => {
-
     await deleteSubtask(parentId, id);
 
     onRefresh();
@@ -27,29 +26,39 @@ export const SubtaskCard: React.FC<SubtaskCardProps> = ({
   };
 
   const handleComplete = async (id: string) => {
-    await toggleSubtask(parentId, id)
+    await toggleSubtask(parentId, id);
     onRefresh();
   };
 
   return (
     <div>
       <div
-        className={`card scale-90  ${subtask.isDone ? "bg-success" : "bg-base-300"
-          }`}>
+        className={`card scale-90  ${
+          subtask.isDone ? "bg-success" : "bg-base-300"
+        }`}
+      >
         <div className="card-body">
           <div className="flex justify-between items-start">
             <div className="flex items-center gap-2">
-              <h2 className="text-lg font-bold text-primary">{subtask.title}</h2>
+              <h2
+                className="text-lg font-bold text-primary"
+                data-testid={`subtask-title-${subtask.id}`}
+              >
+                {subtask.title}
+              </h2>
             </div>
 
             <div className="">
               <div
                 className="tooltip"
-                data-tip={subtask.isDone ? "Uncomplete" : "Complete"}>
+                data-tip={subtask.isDone ? "Uncomplete" : "Complete"}
+              >
                 <button
                   onClick={() => handleComplete(subtask.id)}
-                  className={`btn btn-ghost btn-md ${subtask.isDone ? "text-error" : "text-green-500"
-                    }`}>
+                  className={`btn btn-ghost btn-md ${
+                    subtask.isDone ? "text-error" : "text-green-500"
+                  }`}
+                >
                   <Check />
                 </button>
               </div>
@@ -59,12 +68,14 @@ export const SubtaskCard: React.FC<SubtaskCardProps> = ({
                 </label>
                 <ul
                   tabIndex={0}
-                  className=" p-2 shadow dropdown-content menu bg-accent-content rounded-box">
+                  className=" p-2 shadow dropdown-content menu bg-accent-content rounded-box"
+                >
                   <div className="tooltip" data-tip="Edit subtask">
                     <li>
                       <button
                         onClick={() => handleEditSubtask(subtask)}
-                        className="btn btn-ghost btn-md text-yellow-400">
+                        className="btn btn-ghost btn-md text-yellow-400"
+                      >
                         <Pencil /> {/* Edit icon */}
                       </button>
                     </li>
@@ -74,7 +85,8 @@ export const SubtaskCard: React.FC<SubtaskCardProps> = ({
                     <li>
                       <button
                         onClick={() => handleDeleteSubtask(subtask.id)}
-                        className="btn btn-ghost btn-md text-error">
+                        className="btn btn-ghost btn-md text-error"
+                      >
                         <Trash2 /> {/*Delete Icon */}
                       </button>
                     </li>

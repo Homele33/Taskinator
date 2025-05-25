@@ -35,13 +35,13 @@ services:
     depends_on:
       - backend
     restart: on-failure:5
-    # Add healthcheck to ensure container stays up
-    healthcheck:
-      test: ["CMD", "wget", "-q", "--spider", "http://localhost:3000"]
-      interval: 10s
-      timeout: 5s
-      retries: 3
-      start_period: 15s
+    # # Add healthcheck to ensure container stays up
+    # healthcheck:
+    #   test: ["CMD", "wget", "-q", "--spider", "http://localhost:3000"]
+    #   interval: 10s
+    #   timeout: 5s
+    #   retries: 3
+    #   start_period: 15s
 
 volumes:
   backend_data:
