@@ -47,7 +47,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({
   const fetchSubtasks = async () => {
     setIsLoadingSubtasks(true);
     try {
-      const response = await apiClient.get(`/tasks/subtasks/${task.id}`)
+      const response = await apiClient.get(`/tasks/subtasks/${task.id}`);
       setSubtasks(response.data);
     } catch (err) {
       console.error("Error fetching subtasks:", err);
@@ -69,20 +69,20 @@ export const TaskCard: React.FC<TaskCardProps> = ({
     }
   };
 
-
   const handleAddSubtask = async (subtask: SubtaskFormData) => {
-    const response = addSubtask(task.id, subtask)
+    const response = addSubtask(task.id, subtask);
     await response;
-    fetchSubtasks()
+    fetchSubtasks();
     setIsExpanded(true);
   };
 
   const handleDeleteTask = async (id: string) => {
     try {
       const response = deleteTask(id);
-      await response
+      await response;
+    } catch (error) {
+      console.error("error:", error);
     }
-    catch (error) { console.error("error:", error) }
     onRefresh();
   };
 
@@ -115,8 +115,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({
 
   return (
     <div className={``} {...props}>
-      <div
-        className={`${getCardStyles()} bg-base-300`}>
+      <div className={`${getCardStyles()} bg-base-300`}>
         <div className="card-body">
           <div className="flex justify-between items-start">
             <div className="flex items-center gap-2">
@@ -128,17 +127,20 @@ export const TaskCard: React.FC<TaskCardProps> = ({
                     fetchSubtasks();
                     setIsExpanded(!isExpanded);
                   }}
-                  className="btn btn-ghost btn-sm btn-circle">
+                  className="btn btn-ghost btn-sm btn-circle"
+                >
                   {isLoadingSubtasks ? (
                     <span className="loading loading-spinner loading-xs"></span>
                   ) : (
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
-                      className={`h-4 w-4 transition-transform ${isExpanded ? "rotate-90" : ""
-                        }`}
+                      className={`h-4 w-4 transition-transform ${
+                        isExpanded ? "rotate-90" : ""
+                      }`}
                       fill="none"
                       viewBox="0 0 24 24"
-                      stroke="currentColor">
+                      stroke="currentColor"
+                    >
                       <path
                         strokeLinecap="round"
                         strokeLinejoin="round"
@@ -149,7 +151,10 @@ export const TaskCard: React.FC<TaskCardProps> = ({
                   )}
                 </button>
               )}
-              <h2 className={`${"text-xl"} font-bold  text-primary`} data-testid={`task-title-${task.id}`}>
+              <h2
+                className={`${"text-xl"} font-bold  text-primary`}
+                data-testid={`task-title-${task.id}`}
+              >
                 {task.title}
               </h2>
             </div>
@@ -157,27 +162,28 @@ export const TaskCard: React.FC<TaskCardProps> = ({
               <span className={`badge ${getPriorityColor(task.priority)}`}>
                 {task.priority}
               </span>
-              <div className="dropdown "
-                data-testid={`task-menu-${task.id}`}
-              >
+              <div className="dropdown " data-testid={`task-menu-${task.id}`}>
                 <div>
                   <label
                     tabIndex={0}
-                    className="text-primary btn btn-ghost btn-circle btn-sm ">
+                    className="text-primary btn btn-ghost btn-circle btn-sm "
+                  >
                     <EllipsisVertical />
                   </label>
                 </div>
 
                 <ul
                   tabIndex={0}
-                  className="dropdown-content menu p-2 shadow bg-accent-content rounded-box absolute">
+                  className="dropdown-content menu p-2 shadow bg-accent-content rounded-box absolute"
+                >
                   <div className="tooltip" data-tip="Break task down">
                     <li>
                       <button
                         onClick={() => {
                           handleTaskBreaker(task.id);
                         }}
-                        className="btn btn-ghost btn-md text-purple-600">
+                        className="btn btn-ghost btn-md text-purple-600"
+                      >
                         <Bot /> {/* Task beaker*/}
                       </button>
                     </li>
@@ -189,7 +195,9 @@ export const TaskCard: React.FC<TaskCardProps> = ({
                           setIsFormOpen(true);
                           setEditingSubtask(undefined);
                         }}
-                        className="btn btn-ghost btn-md text-green-500">
+                        data-testid={`task-add-subtask-${task.id}`}
+                        className="btn btn-ghost btn-md text-green-500"
+                      >
                         <SquarePlus className="" /> {/* Add subtask icon */}
                       </button>
                     </li>
@@ -198,7 +206,8 @@ export const TaskCard: React.FC<TaskCardProps> = ({
                     <li>
                       <button
                         onClick={() => onEdit(task)}
-                        className="btn btn-ghost btn-md text-yellow-400">
+                        className="btn btn-ghost btn-md text-yellow-400"
+                      >
                         <Pencil /> {/* Edit icon */}
                       </button>
                     </li>
@@ -208,7 +217,8 @@ export const TaskCard: React.FC<TaskCardProps> = ({
                       <button
                         onClick={() => handleDeleteTask(task.id)}
                         data-testid={`task-delete-button-${task.id}`}
-                        className="btn btn-ghost btn-md text-error">
+                        className="btn btn-ghost btn-md text-error"
+                      >
                         <Trash2 /> {/* Delete icon*/}
                       </button>
                     </li>
@@ -221,7 +231,6 @@ export const TaskCard: React.FC<TaskCardProps> = ({
                   onClose={() => {
                     setIsFormOpen(false);
                     setEditingSubtask(editSubtask);
-
                   }}
                   onSubmit={handleAddSubtask}
                 />
@@ -234,15 +243,17 @@ export const TaskCard: React.FC<TaskCardProps> = ({
           <div className="flex justify-between items-center mt-4">
             <div className="flex items-center gap-2">
               <select
-                className={`select select-bordered select-sm text-base-100 ${{
-                  TODO: "bg-primary",
-                  IN_PROGRESS: "bg-info",
-                  COMPLETED: "bg-success",
-                }[task.status]
-                  }`}
+                className={`select select-bordered select-sm text-base-100 ${
+                  {
+                    TODO: "bg-primary",
+                    IN_PROGRESS: "bg-info",
+                    COMPLETED: "bg-success",
+                  }[task.status]
+                }`}
                 value={task.status}
                 data-testid={`task-status-${task.id}`}
-                onChange={(e) => handleStatusChange(task.id, e.target.value)}>
+                onChange={(e) => handleStatusChange(task.id, e.target.value)}
+              >
                 <option value="TODO">Todo</option>
                 <option value="IN_PROGRESS">In Progress</option>
                 <option value="COMPLETED">Completed</option>
@@ -260,7 +271,11 @@ export const TaskCard: React.FC<TaskCardProps> = ({
       {isExpanded && subtasks.length > 0 && (
         <div className="mt-2 space-y-2">
           {subtasks.map((subtask) => (
-            <div key={subtask.id} className=" ">
+            <div
+              key={subtask.id}
+              className=" "
+              data-testid={`subtask-list-${task.id}`}
+            >
               <SubtaskCard
                 subtask={subtask}
                 parentId={task.id}

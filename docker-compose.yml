@@ -1,6 +1,6 @@
 services:
   backend:
-    build: 
+    build:
       context: ./backend
       dockerfile: Dockerfile
     container_name: task-manager-backend
@@ -29,20 +29,19 @@ services:
     environment:
       - NEXT_PUBLIC_API_URL=http://backend:5000
       - NEXT_DISABLE_ESLINT=1
-      - NODE_ENV=production
       - PORT=3000
     env_file:
       - ./frontend/.env
     depends_on:
       - backend
     restart: on-failure:5
-    # Add healthcheck to ensure container stays up
-    healthcheck:
-      test: ["CMD", "wget", "-q", "--spider", "http://localhost:3000"]
-      interval: 10s
-      timeout: 5s
-      retries: 3
-      start_period: 15s
+    # # Add healthcheck to ensure container stays up
+    # healthcheck:
+    #   test: ["CMD", "wget", "-q", "--spider", "http://localhost:3000"]
+    #   interval: 10s
+    #   timeout: 5s
+    #   retries: 3
+    #   start_period: 15s
 
 volumes:
   backend_data:

@@ -39,18 +39,13 @@ const MainPage: React.FC = () => {
 
   const handleCreateTask = async (taskData: TaskFormData) => {
     try {
-      createTask(taskData)
-    }
-    catch (error) {
+      createTask(taskData);
+    } catch (error) {
       console.error("Error", error);
-    }
-    finally {
+    } finally {
       getTasks();
     }
-
   };
-
-
 
   const handleEditTask = (task: Task) => {
     setEditingTask(task);
@@ -94,7 +89,7 @@ const MainPage: React.FC = () => {
   return (
     <div className="container mx-auto p-4">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-primary">Tasks</h1>
+        <h1 className="text-2xl font-bold text-primary mx-2">Tasks</h1>
         <FuzzySearchBar tasks={tasks} onTaskSelect={handleTaskSelect} />
         <button
           className="btn btn-primary"
