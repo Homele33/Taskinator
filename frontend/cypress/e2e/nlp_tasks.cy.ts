@@ -23,4 +23,7 @@ describe("add nlp task", () => {
     cy.get('[data-testid^="task-list"]').should("be.visible")
 
   })
+  after(() => {
+    cy.logout()
+  })
 })

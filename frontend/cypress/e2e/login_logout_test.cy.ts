@@ -31,16 +31,6 @@ describe('Login Test', () => {
 
 describe("Logout Test", () => {
   beforeEach(() => {
-    cy.intercept('OPTIONS', '/api/tasks', {
-      statusCode: 200,
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE',
-        'Access-Control-Allow-Headers': 'Content-Type, Authorization'
-      },
-      body: {} // Empty response for OPTIONS request
-    });
-
     cy.visit("/")
   })
   it("should be logged out", () => {
