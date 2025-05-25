@@ -5,11 +5,10 @@ export const fetchTasks = async (): Promise<{ tasks: Task[] }> => {
   try {
     const response = await apiClient.get("/tasks");
     return response.data;
-  }
-  catch (error: any) {
+  } catch (error: any) {
     if (error.status === 401) {
       if (typeof window !== undefined) {
-        window.location.href = "/login"
+        window.location.href = "/login";
       }
 
     }
@@ -95,3 +94,16 @@ export const toggleSubtask = async (
     console.error("Error toggeling subtask");
   }
 };
+
+export const submitPreferences = async (preferences: any): Promise<void> => {
+  try {
+    const response = await apiClient.post("/preferences", preferences);
+    if (response.status !== 200) {
+      console.error("Error submitting preferences:", response.data);
+    }
+  } catch (error) {
+    console.error("Error submitting preferences:", error);
+    throw error;
+  }
+};
+

@@ -33,10 +33,15 @@ describe("add nlp task", () => {
 
   it("should delete task", () => {
     // delete task from task-list
+    cy.intercept("DELETE", "api/tasks/*").as("deleteTask");
+
     cy.visit("/");
     cy.get('[data-testid^="task-menu"]').first().click();
     cy.get('[data-testid^="task-delete-button"]').first().click();
 
+    cy.wait("@deleteTask");
+
+    cy.reload;
     cy.get('[data-testid^="task-list"]').should("be.visible");
   });
   after(() => {
