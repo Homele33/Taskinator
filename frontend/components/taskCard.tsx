@@ -87,8 +87,8 @@ export const TaskCard: React.FC<TaskCardProps> = ({
     }
     else {
       addSubtask(task.id, subtask);
+      await fetchSubtasks();
       onRefresh();
-      fetchSubtasks();
       setIsExpanded(true);
     }
   }
