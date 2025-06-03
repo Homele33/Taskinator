@@ -150,7 +150,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({
                 </button>
               )}
               <h2 className={`${"text-xl"} font-bold  text-primary`} data-testid={`task-title-${task.id}`}>
-                {task.title}
+                {task.title.substring(0, 100)}
               </h2>
             </div>
             <div className="flex gap-2">
