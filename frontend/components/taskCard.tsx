@@ -9,7 +9,7 @@ import {
   EllipsisVertical,
   Bot,
 } from "lucide-react";
-import { deleteTask, addSubtask } from "@/utils/taskUtils";
+import { deleteTask, addSubtask, updateSubtask } from "@/utils/taskUtils";
 import apiClient from "@/api/axiosClient";
 
 interface TaskCardProps {
@@ -34,13 +34,11 @@ export const TaskCard: React.FC<TaskCardProps> = ({
   const [subtasks, setSubtasks] = useState<Subtask[]>([]);
   const [isExpanded, setIsExpanded] = useState(false);
   const [isLoadingSubtasks, setIsLoadingSubtasks] = useState(false);
-  const [editSubtask, setEditingSubtask] = useState<string | undefined>(
-    undefined
-  );
+  const [editSubtask, setEditingSubtask] = useState<Subtask | undefined>(undefined);
   const [isFormOpen, setIsFormOpen] = useState(false);
 
+
   useEffect(() => {
-    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
     onRefresh;
   }, [onRefresh, subtasks]);
 
@@ -69,13 +67,6 @@ export const TaskCard: React.FC<TaskCardProps> = ({
     }
   };
 
-  const handleAddSubtask = async (subtask: SubtaskFormData) => {
-    const response = addSubtask(task.id, subtask);
-    await response;
-    fetchSubtasks();
-    setIsExpanded(true);
-  };
-
   const handleDeleteTask = async (id: string) => {
     try {
       const response = deleteTask(id);
@@ -85,6 +76,27 @@ export const TaskCard: React.FC<TaskCardProps> = ({
     }
     onRefresh();
   };
+
+  const handleSubmitSubtask = async (subtask: SubtaskFormData) => {
+    if (editSubtask) {
+      updateSubtask(subtask, task.id, editSubtask.id)
+      onRefresh();
+      fetchSubtasks();
+      setIsExpanded(true);
+
+    }
+    else {
+      addSubtask(task.id, subtask);
+      onRefresh();
+      fetchSubtasks();
+      setIsExpanded(true);
+    }
+  }
+
+  const handleEditSubtask = async (subtask: Subtask) => {
+    setEditingSubtask(subtask);
+    setIsFormOpen(true);
+  }
 
   const handleStatusChange = async (id: string, newStatus: string) => {
     const response = await fetch(
@@ -224,14 +236,14 @@ export const TaskCard: React.FC<TaskCardProps> = ({
                   </div>
                 </ul>
                 <SubtaskForm
-                  subtask={undefined}
+                  subtask={editSubtask}
                   parentId={task.id}
                   isOpen={isFormOpen}
                   onClose={() => {
                     setIsFormOpen(false);
-                    setEditingSubtask(editSubtask);
+                    setEditingSubtask(undefined);
                   }}
-                  onSubmit={handleAddSubtask}
+                  onSubmit={handleSubmitSubtask}
                 />
               </div>
             </div>
@@ -243,10 +255,10 @@ export const TaskCard: React.FC<TaskCardProps> = ({
             <div className="flex items-center gap-2">
               <select
                 className={`select select-bordered select-sm text-base-100 ${{
-                    TODO: "bg-primary",
-                    IN_PROGRESS: "bg-info",
-                    COMPLETED: "bg-success",
-                  }[task.status]
+                  TODO: "bg-primary",
+                  IN_PROGRESS: "bg-info",
+                  COMPLETED: "bg-success",
+                }[task.status]
                   }`}
                 value={task.status}
                 data-testid={`task-status-${task.id}`}
@@ -281,6 +293,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({
                   fetchSubtasks();
                 }}
                 isDone={subtask.isDone}
+                onEdit={handleEditSubtask}
               />
             </div>
           ))}

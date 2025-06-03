@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import TaskForm, { TaskFormData } from "@/components/taskForm";
 import { Task } from "@/components/tasksTypes";
 import { TaskCard } from "@/components/taskCard";
-import { fetchTasks, createTask } from "@/utils/taskUtils";
+import { fetchTasks, createTask, updateTask } from "@/utils/taskUtils";
 import { FuzzySearchBar } from "@/components/searchBar";
 import NaturalLanguageTaskInput from "@/components/nlpInput";
 
@@ -37,15 +37,17 @@ const MainPage: React.FC = () => {
     }
   };
 
-  const handleCreateTask = async (taskData: TaskFormData) => {
-    try {
+  const handleTaskSubmit = async (taskData: TaskFormData) => {
+    if (editingTask) {
+      updateTask(taskData, editingTask.id);
+      getTasks()
+    }
+    else {
       createTask(taskData);
-    } catch (error) {
-      console.error("Error", error);
-    } finally {
       getTasks();
     }
-  };
+  }
+
 
   const handleEditTask = (task: Task) => {
     setEditingTask(task);
@@ -108,7 +110,7 @@ const MainPage: React.FC = () => {
             setIsFormOpen(false);
             setEditingTask(undefined);
           }}
-          onSubmit={handleCreateTask}
+          onSubmit={handleTaskSubmit}
         />
       </div>
 

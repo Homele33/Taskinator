@@ -52,6 +52,26 @@ def toggle_subtask(task_id, subtask_id):
     return jsonify({"message": "Subtask toggled"}), 200
 
 
+@subtasks_bp.route("/<int:task_id>/<int:subtask_id>", methods=["PUT"])
+@auth_required
+def update_subtask(task_id, subtask_id):
+    subtask = SubTask.query.filter_by(task_id=task_id, id=subtask_id).first()
+
+    if not subtask:
+        return jsonify({"message": "Task or subtask not found"}), 404
+    data = request.json
+    subtask.title = data.get("title", subtask.title)
+    subtask.description = data.get("description", subtask.description)
+
+    try:
+        db.session.commit()
+
+    except Exception as e:
+        return jsonify({"message": str(e)}), 401
+
+    return jsonify({"message": "Subtask updated"}), 200
+
+
 @subtasks_bp.route("/<int:task_id>", methods=["GET"])
 @auth_required
 # get all subtasks of a task
