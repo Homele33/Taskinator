@@ -1,5 +1,6 @@
 import apiClient from "@/api/axiosClient";
 import { Task, Subtask } from "@/components/tasksTypes";
+import { error } from "console";
 
 export const fetchTasks = async (): Promise<{ tasks: Task[] }> => {
   try {
@@ -138,4 +139,10 @@ export const updateTask = async (taskData: Omit<Task, "id" | "subtasks">, id: st
   }
 }
 
+export const changeTaskStatus = async (newStatus: string, id: string) => {
+  const response = await apiClient.put(`/tasks/${id}`, newStatus)
+  if (response.status !== 200) {
+    console.error("error updating status")
+  }
+}
 
