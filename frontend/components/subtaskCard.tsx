@@ -7,23 +7,20 @@ interface SubtaskCardProps {
   parentId: string;
   isDone: boolean;
   onRefresh: () => void;
+  onEdit: (subtask: Subtask, parentId: string) => void;
 }
 
 export const SubtaskCard: React.FC<SubtaskCardProps> = ({
   subtask,
-
+  onEdit,
   onRefresh,
   parentId,
 }) => {
   const handleDeleteSubtask = async (id: string) => {
     await deleteSubtask(parentId, id);
-
     onRefresh();
   };
 
-  const handleEditSubtask = async (subtask: Subtask) => {
-    throw new Error(`Function not implemented. subtask ${subtask.title}`);
-  };
 
   const handleComplete = async (id: string) => {
     await toggleSubtask(parentId, id);
@@ -33,9 +30,8 @@ export const SubtaskCard: React.FC<SubtaskCardProps> = ({
   return (
     <div>
       <div
-        className={`card scale-90  ${
-          subtask.isDone ? "bg-success" : "bg-base-300"
-        }`}
+        className={`card scale-90  ${subtask.isDone ? "bg-success" : "bg-base-300"
+          }`}
       >
         <div className="card-body">
           <div className="flex justify-between items-start">
@@ -55,9 +51,8 @@ export const SubtaskCard: React.FC<SubtaskCardProps> = ({
               >
                 <button
                   onClick={() => handleComplete(subtask.id)}
-                  className={`btn btn-ghost btn-md ${
-                    subtask.isDone ? "text-error" : "text-green-500"
-                  }`}
+                  className={`btn btn-ghost btn-md ${subtask.isDone ? "text-error" : "text-green-500"
+                    }`}
                 >
                   <Check />
                 </button>
@@ -73,7 +68,7 @@ export const SubtaskCard: React.FC<SubtaskCardProps> = ({
                   <div className="tooltip" data-tip="Edit subtask">
                     <li>
                       <button
-                        onClick={() => handleEditSubtask(subtask)}
+                        onClick={() => onEdit(subtask, parentId)}
                         className="btn btn-ghost btn-md text-yellow-400"
                       >
                         <Pencil /> {/* Edit icon */}

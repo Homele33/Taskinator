@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Task } from "./tasksTypes";
+import { NEXT_IS_PRERENDER_HEADER } from "next/dist/client/components/app-router-headers";
 
 interface TaskFormProps {
   task?: Task;
@@ -102,25 +103,25 @@ const TaskForm: React.FC<TaskFormProps> = ({
             </div>
 
             <div className="form-control">
-                <label className="label">
-                  <span className="label-text">Task Type</span>
-                </label>
-                <select
-                  className="select select-bordered w-full"
-                  value={formData.task_type}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      task_type: e.target.value as TaskFormData["task_type"],
-                    })
-                  }
-                >
-                  <option value="Meeting">Meeting</option>
-                  <option value="Training">Training</option>
-                  <option value="Studies">Studies</option>
-                </select>
-              </div>
-            
+              <label className="label">
+                <span className="label-text">Task Type</span>
+              </label>
+              <select
+                className="select select-bordered w-full"
+                value={formData.task_type}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    task_type: e.target.value as TaskFormData["task_type"],
+                  })
+                }
+              >
+                <option value="Meeting">Meeting</option>
+                <option value="Training">Training</option>
+                <option value="Studies">Studies</option>
+              </select>
+            </div>
+
             <div className="form-control">
               <label className="label">
                 <span className="label-text">Description</span>

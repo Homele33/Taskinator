@@ -1,5 +1,6 @@
 import apiClient from "@/api/axiosClient";
 import { Task, Subtask } from "@/components/tasksTypes";
+import { error } from "console";
 
 export const fetchTasks = async (): Promise<{ tasks: Task[] }> => {
   try {
@@ -95,6 +96,23 @@ export const toggleSubtask = async (
   }
 };
 
+export const updateSubtask = async (
+  subtaskData: Omit<Subtask, "id">,
+  parentId: string,
+  id: string
+) => {
+  try {
+    const response = await apiClient.put(`/tasks/subtasks/${parentId}/${id}`, subtaskData)
+    if (response.status !== 200) {
+      console.error("Error updating subtask: ", response.data)
+    }
+  }
+  catch (error) {
+    console.error("Unexpected error: ", error);
+    throw error
+  }
+}
+
 export const submitPreferences = async (preferences: any): Promise<void> => {
   try {
     const response = await apiClient.post("/preferences", preferences);
@@ -106,4 +124,19 @@ export const submitPreferences = async (preferences: any): Promise<void> => {
     throw error;
   }
 };
+
+export const updateTask = async (taskData: Omit<Task, "id" | "subtasks">, id: string): Promise<void> => {
+  try {
+    const response = await apiClient.patch(`/tasks/${id}`, taskData)
+    if (response.status !== 200) {
+      console.error("Error updating task: ", response.data)
+    }
+    return response.data
+  }
+  catch (error) {
+    console.error("Unexpected errpr updating task");
+    throw error;
+  }
+}
+
 
