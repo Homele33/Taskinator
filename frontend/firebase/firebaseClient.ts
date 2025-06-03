@@ -1,4 +1,4 @@
-import { initializeApp } from 'firebase/app';
+import { initializeApp } from "firebase/app";
 import {
   getAuth,
   signInWithEmailAndPassword,
@@ -6,9 +6,9 @@ import {
   signOut,
   onAuthStateChanged,
   GoogleAuthProvider,
-  signInWithPopup
-} from 'firebase/auth';
-import { firebaseConfig } from './firebaseConfig';
+  signInWithPopup,
+} from "firebase/auth";
+import { firebaseConfig } from "./firebaseConfig";
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
@@ -18,10 +18,14 @@ const googleProvider = new GoogleAuthProvider();
 // Sign in with email/password
 export const loginWithEmail = async (email: string, password: string) => {
   try {
-    const userCredential = await signInWithEmailAndPassword(auth, email, password);
+    const userCredential = await signInWithEmailAndPassword(
+      auth,
+      email,
+      password
+    );
     return userCredential.user;
   } catch (error) {
-    console.error('Error signing in with email/password', error);
+    console.error("Error signing in with email/password", error);
     throw error;
   }
 };
@@ -29,10 +33,14 @@ export const loginWithEmail = async (email: string, password: string) => {
 // Sign up with email/password
 export const registerWithEmail = async (email: string, password: string) => {
   try {
-    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+    const userCredential = await createUserWithEmailAndPassword(
+      auth,
+      email,
+      password
+    );
     return userCredential.user;
   } catch (error) {
-    console.error('Error registering with email/password', error);
+    console.error("Error registering with email/password", error);
     throw error;
   }
 };
@@ -43,7 +51,7 @@ export const loginWithGoogle = async () => {
     const result = await signInWithPopup(auth, googleProvider);
     return result.user;
   } catch (error) {
-    console.error('Error signing in with Google', error);
+    console.error("Error signing in with Google", error);
     throw error;
   }
 };
@@ -53,7 +61,7 @@ export const logoutUser = async () => {
   try {
     await signOut(auth);
   } catch (error) {
-    console.error('Error signing out', error);
+    console.error("Error signing out", error);
     throw error;
   }
 };
@@ -76,5 +84,3 @@ export const getIdToken = async () => {
   }
   return null;
 };
-
-

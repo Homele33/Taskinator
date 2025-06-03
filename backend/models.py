@@ -86,6 +86,7 @@ class Task(db.Model):
 class UserPreferences(db.Model):
     __tablename__ = "user_preferences"
     id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
     answers = db.Column(db.JSON, nullable=True)
     preference_time = db.Column(db.String(20), nullable=True)
     preferred_days = db.Column(db.JSON, nullable=True)
@@ -94,6 +95,7 @@ class UserPreferences(db.Model):
     def to_json(self):
         return {
             "id": self.id,
+            "userId": self.user_id,
             "answers": self.answers,
             "preference_time": self.preference_time,
             "preferred_days": self.preferred_days,

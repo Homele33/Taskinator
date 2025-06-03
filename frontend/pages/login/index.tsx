@@ -95,6 +95,7 @@ const LoginPage: React.FC = () => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 disabled={isLoading}
+                data-testid="email-input"
               />
             </div>
             <div>
@@ -112,6 +113,7 @@ const LoginPage: React.FC = () => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 disabled={isLoading}
+                data-testid="password-input"
               />
             </div>
           </div>
@@ -141,6 +143,7 @@ const LoginPage: React.FC = () => {
               type="submit"
               className={`btn btn-primary w-full ${isLoading ? 'loading' : ''}`}
               disabled={isLoading}
+              data-testid="login-button"
             >
               {isLoading ? 'Signing in...' : 'Sign in'}
             </button>

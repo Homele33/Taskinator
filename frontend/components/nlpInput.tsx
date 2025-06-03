@@ -65,6 +65,7 @@ const NaturalLanguageTaskInput: React.FC<NaturalLanguageInputProps> = ({ onTaskC
             onChange={(e) => setInputText(e.target.value)}
             onKeyDown={handleKeyDown}
             rows={2}
+            data-testid="nlp-input"
           />
 
           <button
@@ -74,6 +75,7 @@ const NaturalLanguageTaskInput: React.FC<NaturalLanguageInputProps> = ({ onTaskC
               ? 'bg-base-300 text-base-content/50 cursor-not-allowed'
               : 'bg-primary text-primary-content hover:bg-primary-focus'
               } transition-colors`}
+            data-testid="nlp-submit"
           >
             {isLoading ? (
               <span className="flex items-center">

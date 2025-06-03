@@ -92,7 +92,8 @@ const SubtaskForm: React.FC<SubtaskFormProps> = ({
           <p>{error}</p>
           <button
             className="mt-4 w-full rounded-md px-3 py-2 bg-primary-content text-white hover:bg-primary-content-hover"
-            onClick={onClose}>
+            onClick={onClose}
+          >
             Close
           </button>
         </div>
@@ -118,6 +119,8 @@ const SubtaskForm: React.FC<SubtaskFormProps> = ({
                 onChange={(e) =>
                   setFormData({ ...formData, title: e.target.value })
                 }
+                data-testid={`subtask-input`}
+                placeholder="Enter subtask title"
                 required
               />
             </div>
@@ -140,12 +143,15 @@ const SubtaskForm: React.FC<SubtaskFormProps> = ({
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-md">
+              className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-md"
+            >
               Cancel
             </button>
             <button
               type="submit"
-              className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600">
+              className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
+              data-testid={`subtask-submit`}
+            >
               {subtask ? "Save Changes" : "Add Subtask"}
             </button>
           </div>
