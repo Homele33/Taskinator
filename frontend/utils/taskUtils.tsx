@@ -1,6 +1,5 @@
 import apiClient from "@/api/axiosClient";
 import { Task, Subtask } from "@/components/tasksTypes";
-import { error } from "console";
 
 export const fetchTasks = async (): Promise<{ tasks: Task[] }> => {
   try {

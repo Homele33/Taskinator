@@ -5,7 +5,6 @@ import { TaskCard } from "@/components/taskCard";
 import { fetchTasks, createTask, updateTask } from "@/utils/taskUtils";
 import { FuzzySearchBar } from "@/components/searchBar";
 import NaturalLanguageTaskInput from "@/components/nlpInput";
-import { updateInitialEnv } from "@next/env";
 
 const MainPage: React.FC = () => {
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -48,15 +47,7 @@ const MainPage: React.FC = () => {
       getTasks();
     }
   }
-  const handleCreateTask = async (taskData: TaskFormData) => {
-    try {
-      createTask(taskData);
-    } catch (error) {
-      console.error("Error", error);
-    } finally {
-      getTasks();
-    }
-  };
+
 
   const handleEditTask = (task: Task) => {
     setEditingTask(task);

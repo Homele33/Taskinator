@@ -39,7 +39,6 @@ export const TaskCard: React.FC<TaskCardProps> = ({
 
 
   useEffect(() => {
-    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
     onRefresh;
   }, [onRefresh, subtasks]);
 
@@ -68,13 +67,6 @@ export const TaskCard: React.FC<TaskCardProps> = ({
     }
   };
 
-  const handleAddSubtask = async (subtask: SubtaskFormData) => {
-    const response = addSubtask(task.id, subtask);
-    await response;
-    fetchSubtasks();
-    setIsExpanded(true);
-  };
-
   const handleDeleteTask = async (id: string) => {
     try {
       const response = deleteTask(id);
@@ -101,7 +93,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({
     }
   }
 
-  const handleEditSubtask = async (subtask: Subtask, parentI: string) => {
+  const handleEditSubtask = async (subtask: Subtask) => {
     setEditingSubtask(subtask);
     setIsFormOpen(true);
   }
