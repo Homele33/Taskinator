@@ -9,7 +9,7 @@ import {
   EllipsisVertical,
   Bot,
 } from "lucide-react";
-import { deleteTask, addSubtask, updateSubtask } from "@/utils/taskUtils";
+import { deleteTask, addSubtask, updateSubtask, changeTaskStatus } from "@/utils/taskUtils";
 import apiClient from "@/api/axiosClient";
 
 interface TaskCardProps {
@@ -99,16 +99,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({
   }
 
   const handleStatusChange = async (id: string, newStatus: string) => {
-    const response = await fetch(
-      `http://localhost:5000/api/tasks/status/${id}?status=${newStatus}`,
-      {
-        method: "PATCH",
-      }
-    );
-
-    if (!response.ok) {
-      throw new Error("Failed to change status");
-    }
+    await changeTaskStatus(newStatus, id)
     onRefresh();
   };
 
