@@ -3,5 +3,6 @@ instance
 __pycache__
 venv
 .env
+firebase_secret.json
 Taskinator.egg-info
 firebase_secret.json
