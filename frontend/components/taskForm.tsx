@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { Task } from "./tasksTypes";
-import { NEXT_IS_PRERENDER_HEADER } from "next/dist/client/components/app-router-headers";
 
 interface TaskFormProps {
   task?: Task;
@@ -99,6 +98,7 @@ const TaskForm: React.FC<TaskFormProps> = ({
                   setFormData({ ...formData, title: e.target.value })
                 }
                 required
+                data-testid="task-title-input"
               />
             </div>
 
@@ -115,6 +115,7 @@ const TaskForm: React.FC<TaskFormProps> = ({
                     task_type: e.target.value as TaskFormData["task_type"],
                   })
                 }
+                data-testid="task-type-select"
               >
                 <option value="Meeting">Meeting</option>
                 <option value="Training">Training</option>
@@ -133,6 +134,7 @@ const TaskForm: React.FC<TaskFormProps> = ({
                 onChange={(e) =>
                   setFormData({ ...formData, description: e.target.value })
                 }
+                data-testid="task-description-input"
               />
             </div>
 
@@ -150,6 +152,7 @@ const TaskForm: React.FC<TaskFormProps> = ({
                       status: e.target.value as TaskFormData["status"],
                     })
                   }
+                  data-testid="task-status-select"
                 >
                   <option value="TODO">Todo</option>
                   <option value="IN_PROGRESS">In Progress</option>
@@ -170,6 +173,7 @@ const TaskForm: React.FC<TaskFormProps> = ({
                       priority: e.target.value as TaskFormData["priority"],
                     })
                   }
+                  data-testid="task-priority-select"
                 >
                   <option value="LOW">Low</option>
                   <option value="MEDIUM">Medium</option>
@@ -190,6 +194,7 @@ const TaskForm: React.FC<TaskFormProps> = ({
                 onChange={(e) =>
                   setFormData({ ...formData, dueDate: e.target.value })
                 }
+                data-testid="task-datetime-input"
               />
             </div>
 
@@ -206,6 +211,7 @@ const TaskForm: React.FC<TaskFormProps> = ({
                 type="submit"
                 className={`btn btn-primary ${loading ? "loading" : ""}`}
                 disabled={loading}
+                data-testid="save-task-button"
               >
                 {loading ? "Saving..." : "Save Task"}
               </button>

@@ -15,3 +15,21 @@ Cypress.Commands.add("logout", () => {
   cy.get('[data-testid="logout-button"]').click();
 
 });
+
+Cypress.Commands.add("task_delete", () => {
+  cy.intercept("DELETE", "api/tasks/*").as("deleteTask");
+
+  cy.visit("/");
+  cy.get('[data-testid^="task-menu"]').first().click();
+  cy.get('[data-testid^="task-delete-button"]').first().click();
+
+  cy.wait("@deleteTask");
+
+})
+
+Cypress.Commands.add("task_reload", () => {
+  cy.intercept("GET", "/api/tasks").as("getTasks");
+
+  cy.visit("/")
+  cy.wait("@getTasks");
+})

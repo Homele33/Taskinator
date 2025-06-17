@@ -91,7 +91,7 @@ const MainPage: React.FC = () => {
   return (
     <div className="container mx-auto p-4">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-primary mx-2">Tasks</h1>
+        <h1 className="text-2xl font-bold text-primary mx-2">Hello World</h1>
         <FuzzySearchBar tasks={tasks} onTaskSelect={handleTaskSelect} />
         <button
           className="btn btn-primary"
@@ -99,6 +99,7 @@ const MainPage: React.FC = () => {
             setEditingTask(undefined);
             setIsFormOpen(true);
           }}
+          data-testid="new-task-button"
         >
           Add New Task
         </button>
@@ -115,26 +116,28 @@ const MainPage: React.FC = () => {
       </div>
 
       <NaturalLanguageTaskInput onTaskCreated={getTasks} />
-      {tasks.length === 0 ? (
-        <div className="text-center py-8" data-testid="task-list-empty">
-          <p className="text-gray-500">
-            No tasks found. Create your first task!
-          </p>
-        </div>
-      ) : (
-        <div className="space-y-4" data-testid="task-list">
-          {tasks.map((task) => (
-            <TaskCard
-              key={task.id}
-              task={task}
-              onRefresh={getTasks}
-              onEdit={handleEditTask}
-              data-testid={`task-item-${task.id}`}
-            />
-          ))}
-        </div>
-      )}
-    </div>
+      {
+        tasks.length === 0 ? (
+          <div className="text-center py-8" data-testid="task-list-empty">
+            <p className="text-gray-500">
+              No tasks found. Create your first task!
+            </p>
+          </div>
+        ) : (
+          <div className="space-y-4" data-testid="task-list">
+            {tasks.map((task) => (
+              <TaskCard
+                key={task.id}
+                task={task}
+                onRefresh={getTasks}
+                onEdit={handleEditTask}
+                data-testid={`task-item-${task.id}`}
+              />
+            ))}
+          </div>
+        )
+      }
+    </div >
   );
 };
 
