@@ -45,6 +45,7 @@ export const FuzzySearchBar = ({
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value);
+
   };
 
   const highlightMatch = (text: string, query: string): ReactNode => {
@@ -143,6 +144,7 @@ export const FuzzySearchBar = ({
           placeholder="Search tasks..."
           value={searchQuery}
           onChange={handleSearchChange}
+          onBlur={e => setSearchQuery("")}
         />
       </div>
 
@@ -153,14 +155,14 @@ export const FuzzySearchBar = ({
               {filteredTasks.map((task) => (
                 <li
                   key={task.id}
-                  className="px-4 py-3 hover:bg-gray-50 cursor-pointer"
+                  className="px-4 py-3 hover:bg-accent-content cursor-pointer"
                   onClick={() => onTaskSelect(task)}
                 >
                   <div className="flex flex-col">
                     <div className="font-medium">
                       {highlightMatch(task.title, searchQuery)}
                     </div>
-
+                    <div className="badge">{task.task_type}</div>
                     {task.description && (
                       <div className="text-sm text-accent mt-1 truncate">
                         {task.description}
