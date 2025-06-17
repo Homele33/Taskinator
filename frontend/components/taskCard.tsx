@@ -87,8 +87,8 @@ export const TaskCard: React.FC<TaskCardProps> = ({
     }
     else {
       addSubtask(task.id, subtask);
+      await fetchSubtasks();
       onRefresh();
-      fetchSubtasks();
       setIsExpanded(true);
     }
   }
@@ -161,8 +161,11 @@ export const TaskCard: React.FC<TaskCardProps> = ({
               </h2>
             </div>
             <div className="flex gap-2">
-              <span className={`badge ${getPriorityColor(task.priority)}`}>
+              <span className={`badge ${getPriorityColor(task.priority)}`} data-testid={`task-priority-${task.id}`}>
                 {task.priority}
+              </span>
+              <span className="badge text-primary" data-testid={`task-type-${task.id}`}>
+                {task.task_type}
               </span>
               <div className="dropdown " data-testid={`task-menu-${task.id}`}>
                 <div>
@@ -240,7 +243,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({
             </div>
           </div>
 
-          <p className="text-accent">{task.description}</p>
+          <p className="text-accent" data-testid={`task-description-${task.id}`}>{task.description}</p>
 
           <div className="flex justify-between items-center mt-4">
             <div className="flex items-center gap-2">
@@ -261,7 +264,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({
               </select>
             </div>
             {task.dueDate && (
-              <div className="text-sm text-accent">
+              <div className="text-sm text-accent" data-testid={`task-datetime-${task.id}`}>
                 Due: {new Date(task.dueDate).toLocaleString()}
               </div>
             )}
@@ -269,27 +272,29 @@ export const TaskCard: React.FC<TaskCardProps> = ({
         </div>
       </div>
 
-      {isExpanded && subtasks.length > 0 && (
-        <div className="mt-2 space-y-2">
-          {subtasks.map((subtask) => (
-            <div
-              key={subtask.id}
-              className=" "
-              data-testid={`subtask-list-${task.id}`}
-            >
-              <SubtaskCard
-                subtask={subtask}
-                parentId={task.id}
-                onRefresh={() => {
-                  fetchSubtasks();
-                }}
-                isDone={subtask.isDone}
-                onEdit={handleEditSubtask}
-              />
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
+      {
+        isExpanded && subtasks.length > 0 && (
+          <div className="mt-2 space-y-2">
+            {subtasks.map((subtask) => (
+              <div
+                key={subtask.id}
+                className=" "
+                data-testid={`subtask-list-${task.id}`}
+              >
+                <SubtaskCard
+                  subtask={subtask}
+                  parentId={task.id}
+                  onRefresh={() => {
+                    fetchSubtasks();
+                  }}
+                  isDone={subtask.isDone}
+                  onEdit={handleEditSubtask}
+                />
+              </div>
+            ))}
+          </div>
+        )
+      }
+    </div >
   );
 };

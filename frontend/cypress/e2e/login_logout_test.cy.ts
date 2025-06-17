@@ -11,8 +11,6 @@ describe('Login Test', () => {
       body: {} // Empty response for OPTIONS request
     }).as('optionsTasks');
 
-
-
     // Log in and visit the page
     cy.visit('/login');
     cy.get('[data-testid="email-input"]').type('test@example.com');
@@ -33,7 +31,7 @@ describe("Logout Test", () => {
   beforeEach(() => {
     cy.visit("/")
   })
-  it("should be logged out", () => {
+  it("should log out", () => {
     cy.get('[data-testid="burger-menu"]').click()
     cy.get('[data-testid="logout-button"]').click()
 
