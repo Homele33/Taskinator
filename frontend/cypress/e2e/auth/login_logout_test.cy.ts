@@ -1,42 +1,28 @@
-describe('Login Test', () => {
-  beforeEach(() => {
-    // Intercept both the OPTIONS preflight and the GET request
-    cy.intercept('OPTIONS', '/api/tasks', {
-      statusCode: 200,
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE',
-        'Access-Control-Allow-Headers': 'Content-Type, Authorization'
-      },
-      body: {} // Empty response for OPTIONS request
-    }).as('optionsTasks');
+describe('Authentication test', () => {
+  // Log in and visit the page
+  it('should login', () => {
+    cy.login();
 
-    // Log in and visit the page
-    cy.visit('/login');
-    cy.get('[data-testid="email-input"]').type('test@example.com');
-    cy.get('[data-testid="password-input"]').type('password123');
-    cy.get('[data-testid="login-button"]').click();
-  });
+    cy.location('href').should('not.include', '/login')
+  })
 
   it('should display tasks after login', () => {
-    cy.wait('@optionsTasks');
-
+    cy.task_reload();
     cy.location("href").should("eq", Cypress.config().baseUrl + "/")
     cy.get('[data-testid^="task-list"]').should("be.visible")
   });
 
+  it('should redirect on presist login', () => {
+    cy.visit("login");
+
+    cy.location('href').should('not.include', '/login')
+  })
+
+  it("should logout", () => {
+    cy.logout();
+
+    cy.location('href').should('include', '/login')
+  })
+
 });
 
-describe("Logout Test", () => {
-  beforeEach(() => {
-    cy.visit("/")
-  })
-  it("should log out", () => {
-    cy.get('[data-testid="burger-menu"]').click()
-    cy.get('[data-testid="logout-button"]').click()
-
-    cy.location("href").should("include", '/login')
-
-  })
-
-})
