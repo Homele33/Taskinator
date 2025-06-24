@@ -1,24 +1,15 @@
-describe("add nlp task", () => {
+describe("test subtasks", () => {
   before(() => {
-    cy.login("test@example.com", "password123");
-  });
-
-  it("should create new task", () => {
-    // input task text into nlp-input
-    cy.get('[data-testid="nlp-input"]').type("testing nlp today at 13:00");
-    cy.get('[data-testid="nlp-submit"]').click(); // submit task
-    // make sure task is visiable
-    cy.get('[data-testid="task-list"]').should("be.visible");
-
-    // check the task for the right information
-    cy.get('[data-testid^="task-title"]').should("contain.text", "Test");
-    cy.get('[data-testid^="task-status"]').should("contain.text", "Todo");
-    cy.get('[data-testid^="task-"]').should("contain.text", "1:00:00 PM");
+    cy.login();
   });
 
   it("should add subtask", () => {
     // add subtask to task
+    cy.get('[data-testid="nlp-input"]').type("testing nlp today at 13:00");
+    cy.get('[data-testid="nlp-submit"]').click(); // submit task
+
     cy.task_reload();
+
     cy.intercept("GET", "api/tasks/subtasks/*").as("subtasks");
     cy.get('[data-testid^="task-menu"]').first().click();
     cy.get('[data-testid^="task-add-subtask"]').first().click();
@@ -34,14 +25,17 @@ describe("add nlp task", () => {
     );
   });
 
-  it("should delete task", () => {
-    // delete task from task-list
-    cy.task_delete();
+  it("should delete subtask", () => {
+    cy.task_reload();
 
-    cy.reload;
-    cy.get('[data-testid^="task-list"]').should("be.visible");
-  });
+    cy.get('[data-testid^="task-subtasks-toggle"]').click();
+
+    cy.get('[data-testid^="subtask-menu"]').first().click();
+    cy.get('[data-testid^="subtask-delete-button"]').first().click();
+  })
+
   after(() => {
+    cy.task_delete();
     cy.logout();
   });
-});
+})

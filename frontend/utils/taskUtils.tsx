@@ -109,7 +109,6 @@ export const updateSubtask = async (
   }
   catch (error) {
     console.error("Unexpected error: ", error);
-    throw error
   }
 }
 
@@ -125,7 +124,7 @@ export const submitPreferences = async (preferences: any): Promise<void> => {
   }
 };
 
-export const updateTask = async (taskData: Omit<Task, "id" | "subtasks">, id: string): Promise<void> => {
+export const updateTask = async (taskData: Omit<Task, "id" | "subtasks">, id: string): Promise<Task> => {
   try {
     const response = await apiClient.patch(`/tasks/${id}`, taskData)
     if (response.status !== 200) {
@@ -134,7 +133,7 @@ export const updateTask = async (taskData: Omit<Task, "id" | "subtasks">, id: st
     return response.data
   }
   catch (error) {
-    console.error("Unexpected errpr updating task");
+    console.error("Unexpected error updating task");
     throw error;
   }
 }

@@ -77,7 +77,7 @@ def update_task(task_id):
     task.task_type = data.get("task_type", task.task_type)
     task.description = data.get("description", task.description)
     task.status = data.get("status", task.status)
-
+    task.priority = data.get("priority", task.priority)
     due_date = data.get("dueDate")
     if due_date != "" and due_date:
         task.due_date = datetime.fromisoformat(due_date)

@@ -81,6 +81,7 @@ export const SubtaskCard: React.FC<SubtaskCardProps> = ({
                       <button
                         onClick={() => handleDeleteSubtask(subtask.id)}
                         className="btn btn-ghost btn-md text-error"
+                        data-testid={`subtask-delete-button-${subtask.id}`}
                       >
                         <Trash2 /> {/*Delete Icon */}
                       </button>

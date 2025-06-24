@@ -129,8 +129,10 @@ export const TaskCard: React.FC<TaskCardProps> = ({
                   onClick={() => {
                     fetchSubtasks();
                     setIsExpanded(!isExpanded);
+
                   }}
                   className="btn btn-ghost btn-sm btn-circle"
+                  data-testid={`task-subtasks-toggle-${task.id}`}
                 >
                   {isLoadingSubtasks ? (
                     <span className="loading loading-spinner loading-xs"></span>
@@ -212,6 +214,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({
                       <button
                         onClick={() => onEdit(task)}
                         className="btn btn-ghost btn-md text-yellow-400"
+                        data-testid={`task-edit-button-${task.id}`}
                       >
                         <Pencil /> {/* Edit icon */}
                       </button>
@@ -221,8 +224,8 @@ export const TaskCard: React.FC<TaskCardProps> = ({
                     <li>
                       <button
                         onClick={() => handleDeleteTask(task.id)}
-                        data-testid={`task-delete-button-${task.id}`}
                         className="btn btn-ghost btn-md text-error"
+                        data-testid={`task-delete-button-${task.id}`}
                       >
                         <Trash2 /> {/* Delete icon*/}
                       </button>
