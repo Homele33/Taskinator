@@ -39,11 +39,16 @@ const MainPage: React.FC = () => {
 
   const handleCreateTask = async (taskData: TaskFormData) => {
     try {
-      createTask(taskData);
+      await createTask({
+        ...taskData,
+        scheduledStart: null,
+        scheduledEnd: null,
+      });
+      setIsFormOpen(false);
+      setEditingTask(undefined);
+      await getTasks();
     } catch (error) {
       console.error("Error", error);
-    } finally {
-      getTasks();
     }
   };
 

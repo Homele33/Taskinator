@@ -58,9 +58,12 @@ class Task(db.Model):
     )
     priority = db.Column(db.Enum("LOW", "MEDIUM", "HIGH"))
     status = db.Column(db.Enum("TODO", "IN_PROGRESS", "COMPLETED"))
+    duration_minutes = db.Column(db.Integer, nullable=False, default=60)
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.now())
     updated_at = db.Column(db.DateTime, default=datetime.now(), onupdate=datetime.now())
+    scheduled_start = db.Column(db.DateTime, nullable=True)
+    scheduled_end   = db.Column(db.DateTime, nullable=True)
 
     def to_json(self):
         return {
@@ -72,10 +75,13 @@ class Task(db.Model):
             "priority": self.priority,
             "dueDate": self.due_date.isoformat() if self.due_date else None,
             "dueTime": self.due_time.isoformat() if self.due_time else None,
+            "durationMinutes": self.duration_minutes,
             "subtasks": [sub_task.to_json() for sub_task in self.sub_tasks],
             "userId": self.user_id,
             "createdAt": self.created_at.isoformat() if self.created_at else None,
             "updatedAt": self.updated_at.isoformat() if self.updated_at else None,
+            "scheduledStart": self.scheduled_start.isoformat() if self.scheduled_start else None,
+            "scheduledEnd": self.scheduled_end.isoformat() if self.scheduled_end else None,
         }
 
     def add_sub_task(self, sub_task):

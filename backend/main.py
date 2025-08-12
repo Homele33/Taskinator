@@ -4,7 +4,9 @@ from models import Task, SubTask
 from services.auth_middleware import auth_required
 
 from routes import register_blueprints
+from flask_migrate import Migrate
 
+migrate = Migrate(app, db)
 register_blueprints(app)
 
 

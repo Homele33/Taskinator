@@ -24,14 +24,30 @@ def create_task():
     title = request.json.get("title")
     task_type = request.json.get("task_type")
     description = request.json.get("description")
+
     due_date = request.json.get("dueDate")
     if due_date:
         due_date = datetime.fromisoformat(due_date)
+
+    raw_duration = request.json.get("durationMinutes") or request.json.get("duration_minutes")
+    try:
+        duration_minutes = int(raw_duration) if raw_duration is not None else 60
+    except ValueError:
+        return jsonify({"message": "durationMinutes must be an integer"}), 400
+
+    scheduled_start = request.json.get("scheduledStart") or request.json.get("scheduled_start")
+    scheduled_end   = request.json.get("scheduledEnd")   or request.json.get("scheduled_end")
+    if scheduled_start:
+        scheduled_start = datetime.fromisoformat(scheduled_start)
+    if scheduled_end:
+        scheduled_end = datetime.fromisoformat(scheduled_end)
+
     due_time = request.json.get("dueTime")
     sub_tasks = request.json.get("subTasks")
     priority = request.json.get("priority")
     status = request.json.get("status")
     user_id = g.user.id
+
     if not title:
         return jsonify({"message": "You must include a title"}), 400
 
@@ -44,6 +60,9 @@ def create_task():
         status=status,
         priority=priority,
         user_id=user_id,
+        duration_minutes=duration_minutes,    
+        scheduled_start=scheduled_start,       
+        scheduled_end=scheduled_end,  
     )
 
     # subtasks handling

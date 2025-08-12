@@ -16,17 +16,38 @@ export const fetchTasks = async (): Promise<{ tasks: Task[] }> => {
   }
 };
 
+type CreateTaskPayload = Omit<Task, "id" | "subtasks"> & {
+  durationMinutes: number;           
+  scheduledStart?: string | null;    
+  scheduledEnd?: string | null;      
+};
+
 export const createTask = async (
-  taskData: Omit<Task, "id" | "subtasks">
+  taskData: CreateTaskPayload
 ): Promise<Task> => {
+  if (
+    taskData.durationMinutes === undefined ||
+    taskData.durationMinutes === null ||
+    Number.isNaN(Number(taskData.durationMinutes))
+  ) {
+    throw new Error("durationMinutes is required and must be a number");
+  }
+
+  const payload = {
+    ...taskData,
+    scheduledStart: taskData.scheduledStart ?? null,
+    scheduledEnd: taskData.scheduledEnd ?? null,
+  };
+
   try {
-    const response = await apiClient.post("/tasks", taskData);
+    const response = await apiClient.post("/tasks", payload);
     return response.data;
   } catch (error) {
     console.error("Error creating task:", error);
     throw error;
   }
 };
+
 
 export const createNlpTask = async (text: string): Promise<Task> => {
   try {

@@ -16,6 +16,7 @@ export interface TaskFormData {
   status: "TODO" | "IN_PROGRESS" | "COMPLETED";
   priority: "LOW" | "MEDIUM" | "HIGH";
   dueDate?: string;
+  durationMinutes: number;
 }
 
 const TaskForm: React.FC<TaskFormProps> = ({
@@ -32,6 +33,7 @@ const TaskForm: React.FC<TaskFormProps> = ({
     status: "TODO",
     priority: "MEDIUM",
     dueDate: undefined,
+    durationMinutes: 60,
   };
   const [formData, setFormData] = useState<TaskFormData>(defaultData);
   const [loading, setLoading] = useState(false);
@@ -46,6 +48,7 @@ const TaskForm: React.FC<TaskFormProps> = ({
         status: task.status,
         priority: task.priority,
         dueDate: task.dueDate,
+        durationMinutes: task.durationMinutes || 60,
       });
     }
   }, [task, parentTaskId]);
@@ -74,7 +77,7 @@ const TaskForm: React.FC<TaskFormProps> = ({
         <div className="p-6">
           <div className="flex justify-between  mb-6">
             <h2 className="text-xl font-bold">
-              {task ? "Edit Task" : "Create New Task"}
+              {task ? "Edit Task" : "Create New Task(DEBUG)"}
             </h2>
           </div>
 
@@ -191,7 +194,24 @@ const TaskForm: React.FC<TaskFormProps> = ({
                 }
               />
             </div>
-
+            <div className="form-control">
+              <label className="label">
+                <span className="label-text">Duration (minutes)*</span>
+              </label>
+              <input
+                type="number"
+                min={1}
+                className="input input-bordered w-full"
+                value={formData.durationMinutes}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    durationMinutes: Number(e.target.value),
+                  })
+                }
+                required
+              />
+              </div>
             <div className="modal-action">
               <button
                 type="button"
