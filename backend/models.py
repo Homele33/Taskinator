@@ -88,22 +88,33 @@ class Task(db.Model):
         self.sub_tasks.append(sub_task)
         db.session.commit()
 
-
+# Prior for Bayesian Network
 class UserPreferences(db.Model):
     __tablename__ = "user_preferences"
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
-    answers = db.Column(db.JSON, nullable=True)
-    preference_time = db.Column(db.String(20), nullable=True)
-    preferred_days = db.Column(db.JSON, nullable=True)
-    preferred_days_by_task = db.Column(db.JSON, nullable=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False, unique=True)
+    days_off = db.Column(db.JSON, nullable=False, default=list)
+    workday_pref_start = db.Column(db.Time, nullable=True)
+    workday_pref_end   = db.Column(db.Time, nullable=True)
+    focus_peak_start = db.Column(db.Time, nullable=True)
+    focus_peak_end   = db.Column(db.Time, nullable=True)
+    default_duration_minutes = db.Column(db.Integer, nullable=False, default=60)
+    deadline_behavior = db.Column(db.Enum("EARLY", "ON_TIME", "LAST_MINUTE"), nullable=True)
+    flexibility = db.Column(db.Enum("LOW", "MEDIUM", "HIGH"), nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.now)
+    updated_at = db.Column(db.DateTime, default=datetime.now, onupdate=datetime.now)
 
     def to_json(self):
         return {
-            "id": self.id,
             "userId": self.user_id,
-            "answers": self.answers,
-            "preference_time": self.preference_time,
-            "preferred_days": self.preferred_days,
-            "preferred_days_by_task": self.preferred_days_by_task,
+            "daysOff": self.days_off,
+            "workdayPrefStart": self.workday_pref_start.isoformat() if self.workday_pref_start else None,
+            "workdayPrefEnd": self.workday_pref_end.isoformat() if self.workday_pref_end else None,
+            "focusPeakStart": self.focus_peak_start.isoformat() if self.focus_peak_start else None,
+            "focusPeakEnd": self.focus_peak_end.isoformat() if self.focus_peak_end else None,
+            "defaultDurationMinutes": self.default_duration_minutes,
+            "deadlineBehavior": self.deadline_behavior,
+            "flexibility": self.flexibility,
+            "createdAt": self.created_at.isoformat() if self.created_at else None,
+            "updatedAt": self.updated_at.isoformat() if self.updated_at else None,
         }
