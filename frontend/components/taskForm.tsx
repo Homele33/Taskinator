@@ -77,7 +77,7 @@ const TaskForm: React.FC<TaskFormProps> = ({
         <div className="p-6">
           <div className="flex justify-between  mb-6">
             <h2 className="text-xl font-bold">
-              {task ? "Edit Task" : "Create New Task(DEBUG)"}
+              {task ? "Edit Task" : "Create New Task"}
             </h2>
           </div>
 

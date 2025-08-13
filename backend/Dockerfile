@@ -10,7 +10,9 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 
 # Install Python dependencies
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir -r requirements.txt watchdog
+
 
 # Copy project files
 COPY . .
@@ -18,6 +20,5 @@ COPY . .
 # Expose port
 EXPOSE 5000
 
-# Command to run the application
-CMD ["python", "main.py"]
+
 
