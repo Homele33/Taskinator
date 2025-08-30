@@ -13,6 +13,8 @@ RUN npm ci
 # Copy the rest of the source code
 COPY . .
 
+EXPOSE 3000
+
 # Disable ESLint during build 
 ENV NEXT_DISABLE_ESLINT=1
 

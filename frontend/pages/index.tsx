@@ -5,6 +5,8 @@ import { TaskCard } from "@/components/taskCard";
 import { fetchTasks, createTask, updateTask } from "@/utils/taskUtils";
 import { FuzzySearchBar } from "@/components/searchBar";
 import NaturalLanguageTaskInput from "@/components/nlpInput";
+import apiClient from "@/api/axiosClient";
+import OnboardingModal from "@/components/OnboardingModal";
 
 const MainPage: React.FC = () => {
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -12,10 +14,21 @@ const MainPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | undefined>(undefined);
+  const [showOnboarding, setShowOnboarding] = useState(false);
 
   useEffect(() => {
     const theme = localStorage.getItem("theme") || "default";
     document.documentElement.setAttribute("data-theme", theme);
+      (async () => {
+        try {
+          const res = await apiClient.get("/preferences");
+          if (!res.data?.exists) {
+            setShowOnboarding(true);
+          }
+        } catch (e) {
+          console.error("Failed to check preferences:", e);
+        }
+      })();
     getTasks();
   }, []);
 
@@ -43,8 +56,18 @@ const MainPage: React.FC = () => {
       getTasks()
     }
     else {
-      await createTask(taskData);
-      getTasks();
+       try {
+      await createTask({
+        ...taskData,
+        scheduledStart: null,
+        scheduledEnd: null,
+      });
+      setIsFormOpen(false);
+      setEditingTask(undefined);
+      await getTasks();
+    } catch (error) {
+      console.error("Error", error);
+
     }
   }
 
@@ -53,7 +76,7 @@ const MainPage: React.FC = () => {
     setEditingTask(task);
     setIsFormOpen(true);
   };
-
+  
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-screen">
@@ -102,6 +125,13 @@ const MainPage: React.FC = () => {
         >
           Add New Task
         </button>
+        <OnboardingModal
+          isOpen={showOnboarding}
+          onClose={() => setShowOnboarding(false)}
+          onSaved={() => {
+            setShowOnboarding(false);
+          }}
+        />
 
         <TaskForm
           task={editingTask}
