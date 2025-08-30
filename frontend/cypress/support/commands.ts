@@ -1,4 +1,6 @@
-Cypress.Commands.add("login", (email: string, password: string) => {
+Cypress.Commands.add("login", () => {
+  const email = "test@example.com"
+  const password = "password123"
   cy.visit("/login");
   cy.get('[data-testid="email-input"]').type(email);
   cy.get('[data-testid="password-input"]').type(password);

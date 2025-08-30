@@ -30,8 +30,8 @@ export const SubtaskCard: React.FC<SubtaskCardProps> = ({
   return (
     <div>
       <div
-        className={`card scale-90  ${subtask.isDone ? "bg-success" : "bg-base-300"
-          }`}
+        className={`card scale-90  ${subtask.isDone ? "bg-success" : "bg-base-300"}`}
+        data-testid={`subtask-card-${subtask.id}`}
       >
         <div className="card-body">
           <div className="flex justify-between items-start">
@@ -53,11 +53,12 @@ export const SubtaskCard: React.FC<SubtaskCardProps> = ({
                   onClick={() => handleComplete(subtask.id)}
                   className={`btn btn-ghost btn-md ${subtask.isDone ? "text-error" : "text-green-500"
                     }`}
+                  data-testid={`subtask-complete-toggle-${subtask.id}`}
                 >
                   <Check />
                 </button>
               </div>
-              <div className="dropdown dropdown-top z-100">
+              <div className="dropdown dropdown-top z-100" data-testid={`subtask-menu-button-${subtask.id}`}>
                 <label tabIndex={0} className="text-primary">
                   <EllipsisVertical />
                 </label>
@@ -70,6 +71,7 @@ export const SubtaskCard: React.FC<SubtaskCardProps> = ({
                       <button
                         onClick={() => onEdit(subtask, parentId)}
                         className="btn btn-ghost btn-md text-yellow-400"
+                        data-testid={`subtask-edit-button-${subtask.id}`}
                       >
                         <Pencil /> {/* Edit icon */}
                       </button>
@@ -81,6 +83,7 @@ export const SubtaskCard: React.FC<SubtaskCardProps> = ({
                       <button
                         onClick={() => handleDeleteSubtask(subtask.id)}
                         className="btn btn-ghost btn-md text-error"
+                        data-testid={`subtask-delete-button-${subtask.id}`}
                       >
                         <Trash2 /> {/*Delete Icon */}
                       </button>
