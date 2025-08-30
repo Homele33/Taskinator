@@ -9,7 +9,7 @@ import {
   EllipsisVertical,
   Bot,
 } from "lucide-react";
-import { deleteTask, addSubtask } from "@/utils/taskUtils";
+import { deleteTask, addSubtask, updateSubtask, changeTaskStatus } from "@/utils/taskUtils";
 import apiClient from "@/api/axiosClient";
 
 interface TaskCardProps {
@@ -34,13 +34,11 @@ export const TaskCard: React.FC<TaskCardProps> = ({
   const [subtasks, setSubtasks] = useState<Subtask[]>([]);
   const [isExpanded, setIsExpanded] = useState(false);
   const [isLoadingSubtasks, setIsLoadingSubtasks] = useState(false);
-  const [editSubtask, setEditingSubtask] = useState<string | undefined>(
-    undefined
-  );
+  const [editSubtask, setEditingSubtask] = useState<Subtask | undefined>(undefined);
   const [isFormOpen, setIsFormOpen] = useState(false);
 
+
   useEffect(() => {
-    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
     onRefresh;
   }, [onRefresh, subtasks]);
 
@@ -69,13 +67,6 @@ export const TaskCard: React.FC<TaskCardProps> = ({
     }
   };
 
-  const handleAddSubtask = async (subtask: SubtaskFormData) => {
-    const response = addSubtask(task.id, subtask);
-    await response;
-    fetchSubtasks();
-    setIsExpanded(true);
-  };
-
   const handleDeleteTask = async (id: string) => {
     try {
       const response = deleteTask(id);
@@ -86,17 +77,29 @@ export const TaskCard: React.FC<TaskCardProps> = ({
     onRefresh();
   };
 
-  const handleStatusChange = async (id: string, newStatus: string) => {
-    const response = await fetch(
-      `http://localhost:5000/api/tasks/status/${id}?status=${newStatus}`,
-      {
-        method: "PATCH",
-      }
-    );
+  const handleSubmitSubtask = async (subtask: SubtaskFormData) => {
+    if (editSubtask) {
+      updateSubtask(subtask, task.id, editSubtask.id)
+      onRefresh();
+      fetchSubtasks();
+      setIsExpanded(true);
 
-    if (!response.ok) {
-      throw new Error("Failed to change status");
     }
+    else {
+      addSubtask(task.id, subtask);
+      await fetchSubtasks();
+      onRefresh();
+      setIsExpanded(true);
+    }
+  }
+
+  const handleEditSubtask = async (subtask: Subtask) => {
+    setEditingSubtask(subtask);
+    setIsFormOpen(true);
+  }
+
+  const handleStatusChange = async (id: string, newStatus: string) => {
+    await changeTaskStatus(newStatus, id)
     onRefresh();
   };
 
@@ -126,17 +129,18 @@ export const TaskCard: React.FC<TaskCardProps> = ({
                   onClick={() => {
                     fetchSubtasks();
                     setIsExpanded(!isExpanded);
+
                   }}
                   className="btn btn-ghost btn-sm btn-circle"
+                  data-testid={`task-subtasks-toggle-${task.id}`}
                 >
                   {isLoadingSubtasks ? (
                     <span className="loading loading-spinner loading-xs"></span>
                   ) : (
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
-                      className={`h-4 w-4 transition-transform ${
-                        isExpanded ? "rotate-90" : ""
-                      }`}
+                      className={`h-4 w-4 transition-transform ${isExpanded ? "rotate-90" : ""
+                        }`}
                       fill="none"
                       viewBox="0 0 24 24"
                       stroke="currentColor"
@@ -155,12 +159,15 @@ export const TaskCard: React.FC<TaskCardProps> = ({
                 className={`${"text-xl"} font-bold  text-primary`}
                 data-testid={`task-title-${task.id}`}
               >
-                {task.title}
+                {task.title.substring(0, 100)}
               </h2>
             </div>
             <div className="flex gap-2">
-              <span className={`badge ${getPriorityColor(task.priority)}`}>
+              <span className={`badge ${getPriorityColor(task.priority)}`} data-testid={`task-priority-${task.id}`}>
                 {task.priority}
+              </span>
+              <span className="badge text-primary" data-testid={`task-type-${task.id}`}>
+                {task.task_type}
               </span>
               <div className="dropdown " data-testid={`task-menu-${task.id}`}>
                 <div>
@@ -207,6 +214,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({
                       <button
                         onClick={() => onEdit(task)}
                         className="btn btn-ghost btn-md text-yellow-400"
+                        data-testid={`task-edit-button-${task.id}`}
                       >
                         <Pencil /> {/* Edit icon */}
                       </button>
@@ -216,8 +224,8 @@ export const TaskCard: React.FC<TaskCardProps> = ({
                     <li>
                       <button
                         onClick={() => handleDeleteTask(task.id)}
-                        data-testid={`task-delete-button-${task.id}`}
                         className="btn btn-ghost btn-md text-error"
+                        data-testid={`task-delete-button-${task.id}`}
                       >
                         <Trash2 /> {/* Delete icon*/}
                       </button>
@@ -225,31 +233,30 @@ export const TaskCard: React.FC<TaskCardProps> = ({
                   </div>
                 </ul>
                 <SubtaskForm
-                  subtask={undefined}
+                  subtask={editSubtask}
                   parentId={task.id}
                   isOpen={isFormOpen}
                   onClose={() => {
                     setIsFormOpen(false);
-                    setEditingSubtask(editSubtask);
+                    setEditingSubtask(undefined);
                   }}
-                  onSubmit={handleAddSubtask}
+                  onSubmit={handleSubmitSubtask}
                 />
               </div>
             </div>
           </div>
 
-          <p className="text-accent">{task.description}</p>
+          <p className="text-accent" data-testid={`task-description-${task.id}`}>{task.description}</p>
 
           <div className="flex justify-between items-center mt-4">
             <div className="flex items-center gap-2">
               <select
-                className={`select select-bordered select-sm text-base-100 ${
-                  {
-                    TODO: "bg-primary",
-                    IN_PROGRESS: "bg-info",
-                    COMPLETED: "bg-success",
-                  }[task.status]
-                }`}
+                className={`select select-bordered select-sm text-base-100 ${{
+                  TODO: "bg-primary",
+                  IN_PROGRESS: "bg-info",
+                  COMPLETED: "bg-success",
+                }[task.status]
+                  }`}
                 value={task.status}
                 data-testid={`task-status-${task.id}`}
                 onChange={(e) => handleStatusChange(task.id, e.target.value)}
@@ -260,7 +267,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({
               </select>
             </div>
             {task.dueDate && (
-              <div className="text-sm text-accent">
+              <div className="text-sm text-accent" data-testid={`task-datetime-${task.id}`}>
                 Due: {new Date(task.dueDate).toLocaleString()}
               </div>
             )}
@@ -268,26 +275,29 @@ export const TaskCard: React.FC<TaskCardProps> = ({
         </div>
       </div>
 
-      {isExpanded && subtasks.length > 0 && (
-        <div className="mt-2 space-y-2">
-          {subtasks.map((subtask) => (
-            <div
-              key={subtask.id}
-              className=" "
-              data-testid={`subtask-list-${task.id}`}
-            >
-              <SubtaskCard
-                subtask={subtask}
-                parentId={task.id}
-                onRefresh={() => {
-                  fetchSubtasks();
-                }}
-                isDone={subtask.isDone}
-              />
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
+      {
+        isExpanded && subtasks.length > 0 && (
+          <div className="mt-2 space-y-2">
+            {subtasks.map((subtask) => (
+              <div
+                key={subtask.id}
+                className=" "
+                data-testid={`subtask-list-${task.id}`}
+              >
+                <SubtaskCard
+                  subtask={subtask}
+                  parentId={task.id}
+                  onRefresh={() => {
+                    fetchSubtasks();
+                  }}
+                  isDone={subtask.isDone}
+                  onEdit={handleEditSubtask}
+                />
+              </div>
+            ))}
+          </div>
+        )
+      }
+    </div >
   );
 };

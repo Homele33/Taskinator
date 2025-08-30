@@ -61,9 +61,11 @@ const LoginPage: React.FC = () => {
           <h2 className="text-3xl font-extrabold text-primary">Sign in to your account</h2>
           <p className="mt-2 text-sm text-accent">
             Or{' '}
-            <Link href="/register" className="font-medium text-primary hover:text-primary-focus">
-              create a new account
-            </Link>
+            <button className='btn'>
+              <Link href="/register" className="font-medium text-primary hover:text-primary-focus">
+                Register
+              </Link>
+            </button>
           </p>
         </div>
 

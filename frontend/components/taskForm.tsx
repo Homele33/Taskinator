@@ -101,29 +101,31 @@ const TaskForm: React.FC<TaskFormProps> = ({
                   setFormData({ ...formData, title: e.target.value })
                 }
                 required
+                data-testid="task-title-input"
               />
             </div>
 
             <div className="form-control">
-                <label className="label">
-                  <span className="label-text">Task Type</span>
-                </label>
-                <select
-                  className="select select-bordered w-full"
-                  value={formData.task_type}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      task_type: e.target.value as TaskFormData["task_type"],
-                    })
-                  }
-                >
-                  <option value="Meeting">Meeting</option>
-                  <option value="Training">Training</option>
-                  <option value="Studies">Studies</option>
-                </select>
-              </div>
-            
+              <label className="label">
+                <span className="label-text">Task Type</span>
+              </label>
+              <select
+                className="select select-bordered w-full"
+                value={formData.task_type}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    task_type: e.target.value as TaskFormData["task_type"],
+                  })
+                }
+                data-testid="task-type-select"
+              >
+                <option value="Meeting">Meeting</option>
+                <option value="Training">Training</option>
+                <option value="Studies">Studies</option>
+              </select>
+            </div>
+
             <div className="form-control">
               <label className="label">
                 <span className="label-text">Description</span>
@@ -135,6 +137,7 @@ const TaskForm: React.FC<TaskFormProps> = ({
                 onChange={(e) =>
                   setFormData({ ...formData, description: e.target.value })
                 }
+                data-testid="task-description-input"
               />
             </div>
 
@@ -152,6 +155,7 @@ const TaskForm: React.FC<TaskFormProps> = ({
                       status: e.target.value as TaskFormData["status"],
                     })
                   }
+                  data-testid="task-status-select"
                 >
                   <option value="TODO">Todo</option>
                   <option value="IN_PROGRESS">In Progress</option>
@@ -172,6 +176,7 @@ const TaskForm: React.FC<TaskFormProps> = ({
                       priority: e.target.value as TaskFormData["priority"],
                     })
                   }
+                  data-testid="task-priority-select"
                 >
                   <option value="LOW">Low</option>
                   <option value="MEDIUM">Medium</option>
@@ -192,6 +197,7 @@ const TaskForm: React.FC<TaskFormProps> = ({
                 onChange={(e) =>
                   setFormData({ ...formData, dueDate: e.target.value })
                 }
+                data-testid="task-datetime-input"
               />
             </div>
             <div className="form-control">
@@ -225,6 +231,7 @@ const TaskForm: React.FC<TaskFormProps> = ({
                 type="submit"
                 className={`btn btn-primary ${loading ? "loading" : ""}`}
                 disabled={loading}
+                data-testid="save-task-button"
               >
                 {loading ? "Saving..." : "Save Task"}
               </button>

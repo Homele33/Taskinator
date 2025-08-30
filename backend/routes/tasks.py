@@ -95,7 +95,8 @@ def update_task(task_id):
     task.title = data.get("title", task.title)
     task.task_type = data.get("task_type", task.task_type)
     task.description = data.get("description", task.description)
-
+    task.status = data.get("status", task.status)
+    task.priority = data.get("priority", task.priority)
     due_date = data.get("dueDate")
     if due_date != "" and due_date:
         task.due_date = datetime.fromisoformat(due_date)
@@ -140,12 +141,12 @@ def get_task(task_id):
     return jsonify(task.to_json()), 200
 
 
-@tasks_bp.route("/status/<int:task_id>", methods=["PATCH"])  # change task status
+@tasks_bp.route("/<int:task_id>", methods=["PUT"])  # change task status
 @auth_required
 def toggle_task(task_id):
     task = Task.query.filter_by(user_id=g.user.id, id=task_id).first()
 
-    status = request.args.get("status")
+    status = request.json
 
     if not task:
         return jsonify({"message": "Task not found"}), 404

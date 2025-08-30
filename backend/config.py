@@ -12,7 +12,7 @@ CORS(
     resources={
         r"/api/*": {
             "origins": ["http://localhost:3000", "*"],
-            "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+            "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
             "allow_headers": ["Content-Type", "Accept", "Origin", "Authorization"],
             "supports_credentials": True,
         }
