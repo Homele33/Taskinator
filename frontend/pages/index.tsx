@@ -50,27 +50,25 @@ const MainPage: React.FC = () => {
     }
   };
 
-  const handleTaskSubmit = async (taskData: TaskFormData) => {
-    if (editingTask) {
-      await updateTask(taskData, editingTask.id);
-      getTasks()
-    }
-    else {
-       try {
-      await createTask({
-        ...taskData,
-        scheduledStart: null,
-        scheduledEnd: null,
-      });
+const handleTaskSubmit = async (taskData: TaskFormData) => {
+    try {
+      if (editingTask) {
+        await updateTask(taskData, editingTask.id);
+      } else {
+        await createTask({
+          ...taskData,
+          scheduledStart: null,
+          scheduledEnd: null,
+        });
+      }
+      
       setIsFormOpen(false);
       setEditingTask(undefined);
       await getTasks();
     } catch (error) {
-      console.error("Error", error);
-
+      console.error("Error submitting task:", error);
     }
-  }
-
+  };
 
   const handleEditTask = (task: Task) => {
     setEditingTask(task);
