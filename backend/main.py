@@ -1,9 +1,14 @@
 from flask import jsonify, g
 from config import app, db
-from models import Task, SubTask
 from services.auth_middleware import auth_required
-
 from routes import register_blueprints
+from flask_migrate import Migrate
+
+migrate = Migrate(app, db)
+
+@app.get("/api/health")
+def health():
+    return {"ok": True}, 200
 
 register_blueprints(app)
 
@@ -20,7 +25,7 @@ def auth_test():
 
 
 if __name__ == "__main__":
-    with app.app_context():
-        db.create_all()
+    #with app.app_context():
+    #   db.create_all()
 
     app.run(host="0.0.0.0", port=5000, debug=True)

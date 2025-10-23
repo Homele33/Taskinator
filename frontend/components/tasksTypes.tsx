@@ -7,6 +7,9 @@ export interface Task {
   priority: "LOW" | "MEDIUM" | "HIGH";
   dueDate?: string;
   subtasks: Array<Subtask>;
+  durationMinutes: number; 
+  scheduledStart?: string | null; 
+  scheduledEnd?: string | null;
 }
 
 export interface Subtask {

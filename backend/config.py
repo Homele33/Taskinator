@@ -1,4 +1,5 @@
-from flask import Flask
+# config.py
+from flask import Flask, request
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 import os
@@ -7,57 +8,86 @@ from firebase_admin import credentials, auth
 
 app = Flask(__name__)
 
-# Configure CORS to allow requests from frontend
+# ---------- CORS ----------
+FRONTEND_ORIGINS = os.getenv("FRONTEND_ORIGINS", "http://localhost:3000,http://127.0.0.1:3000")
+ALLOWED_ORIGINS = [o.strip() for o in FRONTEND_ORIGINS.split(",") if o.strip()]
+
 CORS(
     app,
-    resources={
-        r"/api/*": {
-            "origins": ["http://localhost:3000", "*"],
-            "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
-            "allow_headers": ["Content-Type", "Accept", "Origin", "Authorization"],
-            "supports_credentials": True,
-        }
-    },
+    resources={r"/api/*": {"origins": ALLOWED_ORIGINS}},
+    supports_credentials=True, 
+    methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
+    allow_headers=["Content-Type", "Authorization", "Accept", "Origin"],
 )
 
+@app.after_request
+def add_cors_headers(resp):
+    origin = request.headers.get("Origin")
+    if origin in ALLOWED_ORIGINS:
+        resp.headers["Access-Control-Allow-Origin"] = origin
+        resp.headers["Vary"] = "Origin"
+        resp.headers["Access-Control-Allow-Credentials"] = "true"
+        resp.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization, Accept, Origin"
+        resp.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS, PATCH"
+    return resp
+# -------------------------
 
-env = os.getenv("FLASK_ENV")
+IN_DOCKER = os.path.exists("/.dockerenv")
+if IN_DOCKER:
+    try:
+        os.makedirs("/instance", exist_ok=True)
+    except Exception as e:
+        print(f"Warning: could not ensure /instance dir: {e}")
 
-
-if env == "testing":
-    app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///test_database.db"
+db_url = os.getenv("DATABASE_URL")
+if db_url:
+    if db_url.startswith("sqlite:///instance/"):
+        if IN_DOCKER:
+            db_url = "sqlite:////instance/" + db_url.split("sqlite:///instance/", 1)[1]
+        else:
+            local_instance = os.path.join(os.path.dirname(__file__), "instance")
+            os.makedirs(local_instance, exist_ok=True)
+            rel = db_url.split("sqlite:///instance/", 1)[1]
+            db_url = "sqlite:///" + os.path.join(local_instance, rel).replace("\\", "/")
+    app.config["SQLALCHEMY_DATABASE_URI"] = db_url
 else:
-    app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///tasks.db"
+    env = os.getenv("FLASK_ENV")
+    if env == "testing":
+        app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///test_database.db"
+    else:
+        app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///tasks.db"
+
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 db = SQLAlchemy(app)
 
-cred = credentials.Certificate("./firebase_secret.json")
-firebase_app = firebase_admin.initialize_app(cred)
-
+# ---------- Firebase ----------
+FIREBASE_CRED_PATH = os.getenv("GOOGLE_APPLICATION_CREDENTIALS", "./firebase_secret.json")
+try:
+    cred = credentials.Certificate(FIREBASE_CRED_PATH)
+    firebase_app = firebase_admin.initialize_app(cred)
+    print("✅ Firebase initialized")
+except Exception as e:
+    firebase_app = None
+    print(f"⚠️ Firebase not initialized: {e}")
 
 def verify_firebase_token(id_token):
-    """
-    Verify Firebase ID token and return the corresponding user info
-    """
+    """Verify Firebase ID token and return the corresponding user info."""
+    if not firebase_app:
+        print("verify_firebase_token called but Firebase is not initialized.")
+        return None
     try:
-        # Verify the ID token while checking if the token is revoked
         decoded_token = auth.verify_id_token(id_token, check_revoked=True)
-        # Get user info from decoded token
-        uid = decoded_token["uid"]
-        # Additional claims from token if needed
-        email = decoded_token.get("email")
-        name = decoded_token.get("name")
-        picture = decoded_token.get("picture")
-
-        return {"uid": uid, "email": email, "name": name, "picture": picture}
+        return {
+            "uid": decoded_token["uid"],
+            "email": decoded_token.get("email"),
+            "name": decoded_token.get("name"),
+            "picture": decoded_token.get("picture"),
+        }
     except auth.RevokedIdTokenError:
-        # Token has been revoked
         return None
     except auth.InvalidIdTokenError:
-        # Token is invalid
         return None
     except Exception as e:
-        # Other errors
         print(f"Error verifying token: {e}")
         return None

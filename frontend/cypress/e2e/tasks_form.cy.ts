@@ -1,6 +1,6 @@
 describe("test task form", () => {
   before(() => {
-    cy.login("test@example.com", "password123");
+    cy.login();
   });
 
   it("should create a task with title and description and default values using task form", () => {
