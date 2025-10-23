@@ -1,20 +1,37 @@
-from config import db
+# backend/models.py
 from datetime import datetime
+from config import db
 
 
 class User(db.Model):
     """User model that links to Firebase authentication"""
 
     __tablename__ = "user"
+
     id = db.Column(db.Integer, primary_key=True)
     firebase_uid = db.Column(db.String(128), unique=True, nullable=False)
     email = db.Column(db.String(100), unique=True, nullable=False)
     display_name = db.Column(db.String(100), nullable=True)
     photo_url = db.Column(db.String(255), nullable=True)
-    created_at = db.Column(db.DateTime, default=datetime.now())
+
+    # Use callables for timestamps (evaluated at row insert/update time)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
     last_login = db.Column(db.DateTime, nullable=True)
+
     tasks = db.relationship(
-        "Task", backref="user", lazy=True, cascade="all, delete-orphan"
+        "Task",
+        backref="user",
+        lazy=True,
+        cascade="all, delete-orphan",
+    )
+
+    # Optional: quick backref to preferences (one-to-one)
+    preferences = db.relationship(
+        "UserPreferences",
+        uselist=False,
+        backref="user",
+        lazy=True,
+        cascade="all, delete-orphan",
     )
 
     def to_json(self):
@@ -29,6 +46,8 @@ class User(db.Model):
 
 
 class SubTask(db.Model):
+    __tablename__ = "sub_task"
+
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(100), nullable=False, unique=False)
     is_done = db.Column(db.Boolean, default=False, nullable=False, unique=False)
@@ -46,24 +65,49 @@ class SubTask(db.Model):
 
 class Task(db.Model):
     __tablename__ = "task"
+
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(100), unique=False, nullable=False)
-    task_type = db.Column(db.Enum("Meeting", "Training", "Studies"))
+
+    # Named enums (future-proof for Postgres)
+    task_type = db.Column(
+        db.Enum("Meeting", "Training", "Studies", name="task_type_enum"),
+        nullable=True,
+    )
     description = db.Column(db.String(200), nullable=True, unique=False)
     is_done = db.Column(db.Boolean, default=False, nullable=False, unique=False)
+
+    # Legacy fields still in use on UI
     due_date = db.Column(db.DateTime, nullable=True, unique=False)
     due_time = db.Column(db.Time, nullable=True, unique=False)
+
     sub_tasks = db.relationship(
         "SubTask", backref="task", lazy=True, cascade="all, delete-orphan"
     )
-    priority = db.Column(db.Enum("LOW", "MEDIUM", "HIGH"))
-    status = db.Column(db.Enum("TODO", "IN_PROGRESS", "COMPLETED"))
+
+    priority = db.Column(
+        db.Enum("LOW", "MEDIUM", "HIGH", name="priority_enum"),
+        nullable=True,
+    )
+    status = db.Column(
+        db.Enum("TODO", "IN_PROGRESS", "COMPLETED", name="status_enum"),
+        nullable=True,
+    )
+
     duration_minutes = db.Column(db.Integer, nullable=False, default=60)
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
-    created_at = db.Column(db.DateTime, default=datetime.now())
-    updated_at = db.Column(db.DateTime, default=datetime.now(), onupdate=datetime.now())
-    scheduled_start = db.Column(db.DateTime, nullable=True)
-    scheduled_end   = db.Column(db.DateTime, nullable=True)
+
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    # Scheduling fields used by suggestions/AI
+    scheduled_start = db.Column(db.DateTime, nullable=True, index=True)
+    scheduled_end = db.Column(db.DateTime, nullable=True)
+
+    __table_args__ = (
+        # speeds up: "all tasks of a user ordered by start" queries
+        db.Index("ix_task_user_start", "user_id", "scheduled_start"),
+    )
 
     def to_json(self):
         return {
@@ -88,21 +132,36 @@ class Task(db.Model):
         self.sub_tasks.append(sub_task)
         db.session.commit()
 
-# Prior for Bayesian Network
+
 class UserPreferences(db.Model):
+    """Prior/preferences that the suggestor uses."""
     __tablename__ = "user_preferences"
+
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False, unique=True)
+    user_id = db.Column(
+        db.Integer, db.ForeignKey("user.id"), nullable=False, unique=True
+    )
+
+    # days_off: list[int]  0..6 (Sun..Sat) per המימוש שלנו
     days_off = db.Column(db.JSON, nullable=False, default=list)
+
     workday_pref_start = db.Column(db.Time, nullable=True)
-    workday_pref_end   = db.Column(db.Time, nullable=True)
+    workday_pref_end = db.Column(db.Time, nullable=True)
     focus_peak_start = db.Column(db.Time, nullable=True)
-    focus_peak_end   = db.Column(db.Time, nullable=True)
+    focus_peak_end = db.Column(db.Time, nullable=True)
+
     default_duration_minutes = db.Column(db.Integer, nullable=False, default=60)
-    deadline_behavior = db.Column(db.Enum("EARLY", "ON_TIME", "LAST_MINUTE"), nullable=True)
-    flexibility = db.Column(db.Enum("LOW", "MEDIUM", "HIGH"), nullable=True)
-    created_at = db.Column(db.DateTime, default=datetime.now)
-    updated_at = db.Column(db.DateTime, default=datetime.now, onupdate=datetime.now)
+    deadline_behavior = db.Column(
+        db.Enum("EARLY", "ON_TIME", "LAST_MINUTE", name="deadline_behavior_enum"),
+        nullable=True,
+    )
+    flexibility = db.Column(
+        db.Enum("LOW", "MEDIUM", "HIGH", name="flexibility_enum"),
+        nullable=True,
+    )
+
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     def to_json(self):
         return {
