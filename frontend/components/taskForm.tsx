@@ -187,16 +187,17 @@ const TaskForm: React.FC<TaskFormProps> = ({
 
             <div className="form-control">
               <label className="label">
-                <span className="label-text">Due Date</span>
+                <span className="label-text">Due Date (DD/MM/YYYY HH:MM)</span>
               </label>
               <input
                 type="datetime-local"
                 className="input input-bordered w-full"
                 name="dueDate"
-                value={formData.dueDate || undefined}
+                value={formData.dueDate || ""}
                 onChange={(e) =>
                   setFormData({ ...formData, dueDate: e.target.value })
                 }
+                placeholder="DD/MM/YYYY HH:MM"
                 data-testid="task-datetime-input"
               />
             </div>

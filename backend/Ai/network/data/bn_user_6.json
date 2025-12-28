@@ -1,0 +1,493 @@
+{
+  "user_id": 6,
+  "network_structure": {
+    "nodes": {
+      "WorkdayWindow": {
+        "states": [
+          "NONE",
+          "EARLY_BIRD",
+          "STANDARD",
+          "NIGHT_OWL",
+          "FLEXIBLE"
+        ],
+        "parents": [],
+        "cpt": null
+      },
+      "FocusPeakState": {
+        "states": [
+          "MORNING",
+          "AFTERNOON",
+          "EVENING",
+          "NONE"
+        ],
+        "parents": [],
+        "cpt": null
+      },
+      "DaysOffPattern": {
+        "states": [
+          "NO_DAYS_OFF",
+          "WEEKEND_ONLY",
+          "MIXED",
+          "HEAVY"
+        ],
+        "parents": [],
+        "cpt": null
+      },
+      "FlexibilityLevel": {
+        "states": [
+          "LOW",
+          "MEDIUM",
+          "HIGH",
+          "UNKNOWN"
+        ],
+        "parents": [],
+        "cpt": null
+      },
+      "DeadlineBehavior": {
+        "states": [
+          "EARLY",
+          "ON_TIME",
+          "LAST_MINUTE",
+          "UNKNOWN"
+        ],
+        "parents": [],
+        "cpt": null
+      },
+      "DurationPreference": {
+        "states": [
+          "SHORT",
+          "MEDIUM",
+          "LONG"
+        ],
+        "parents": [],
+        "cpt": null
+      },
+      "UserPersona": {
+        "states": [
+          "STRUCTURED",
+          "ADAPTIVE",
+          "SPONTANEOUS",
+          "WORKAHOLIC"
+        ],
+        "parents": [
+          "FlexibilityLevel",
+          "WorkdayWindow",
+          "DaysOffPattern"
+        ],
+        "cpt": {
+          "node_name": "UserPersona",
+          "table": {},
+          "is_functional": true
+        }
+      },
+      "EnergyPattern": {
+        "states": [
+          "FRONT_LOADED",
+          "BALANCED",
+          "BACK_LOADED"
+        ],
+        "parents": [
+          "FocusPeakState",
+          "WorkdayWindow"
+        ],
+        "cpt": {
+          "node_name": "EnergyPattern",
+          "table": {},
+          "is_functional": true
+        }
+      },
+      "TaskBatchingPreference": {
+        "states": [
+          "PREFERS_SINGLE",
+          "PREFERS_BATCHING"
+        ],
+        "parents": [
+          "DurationPreference",
+          "FlexibilityLevel"
+        ],
+        "cpt": {
+          "node_name": "TaskBatchingPreference",
+          "table": {},
+          "is_functional": true
+        }
+      },
+      "PlanningHorizon": {
+        "states": [
+          "SHORT_TERM",
+          "MEDIUM_TERM",
+          "LONG_TERM"
+        ],
+        "parents": [
+          "DeadlineBehavior",
+          "FlexibilityLevel"
+        ],
+        "cpt": {
+          "node_name": "PlanningHorizon",
+          "table": {},
+          "is_functional": true
+        }
+      },
+      "PreferredTimeOfDay_Meeting": {
+        "states": [
+          "MORNING",
+          "MIDDAY",
+          "AFTERNOON",
+          "EVENING",
+          "NIGHT"
+        ],
+        "parents": [
+          "EnergyPattern",
+          "UserPersona"
+        ],
+        "cpt": {
+          "node_name": "PreferredTimeOfDay_Meeting",
+          "table": {},
+          "is_functional": true
+        }
+      },
+      "PreferredDayType_Meeting": {
+        "states": [
+          "WEEKDAY",
+          "WEEKEND",
+          "ANY"
+        ],
+        "parents": [
+          "DaysOffPattern"
+        ],
+        "cpt": {
+          "node_name": "PreferredDayType_Meeting",
+          "table": {},
+          "is_functional": true
+        }
+      },
+      "PreferredTimeOfDay_Training": {
+        "states": [
+          "MORNING",
+          "MIDDAY",
+          "AFTERNOON",
+          "EVENING",
+          "NIGHT"
+        ],
+        "parents": [
+          "EnergyPattern",
+          "UserPersona"
+        ],
+        "cpt": {
+          "node_name": "PreferredTimeOfDay_Training",
+          "table": {},
+          "is_functional": true
+        }
+      },
+      "PreferredDayType_Training": {
+        "states": [
+          "WEEKDAY",
+          "WEEKEND",
+          "ANY"
+        ],
+        "parents": [
+          "DaysOffPattern"
+        ],
+        "cpt": {
+          "node_name": "PreferredDayType_Training",
+          "table": {},
+          "is_functional": true
+        }
+      },
+      "PreferredTimeOfDay_Studies": {
+        "states": [
+          "MORNING",
+          "MIDDAY",
+          "AFTERNOON",
+          "EVENING",
+          "NIGHT"
+        ],
+        "parents": [
+          "EnergyPattern",
+          "UserPersona"
+        ],
+        "cpt": {
+          "node_name": "PreferredTimeOfDay_Studies",
+          "table": {},
+          "is_functional": true
+        }
+      },
+      "PreferredDayType_Studies": {
+        "states": [
+          "WEEKDAY",
+          "WEEKEND",
+          "ANY"
+        ],
+        "parents": [
+          "DaysOffPattern"
+        ],
+        "cpt": {
+          "node_name": "PreferredDayType_Studies",
+          "table": {},
+          "is_functional": true
+        }
+      }
+    },
+    "evidence": {
+      "WorkdayWindow": "STANDARD",
+      "FocusPeakState": "MORNING",
+      "DaysOffPattern": "MIXED",
+      "FlexibilityLevel": "MEDIUM",
+      "DeadlineBehavior": "EARLY",
+      "DurationPreference": "MEDIUM"
+    }
+  },
+  "observations": [
+    {
+      "user_id": 6,
+      "task_type": "Meeting",
+      "priority": "MEDIUM",
+      "scheduled_start": "2025-11-18T15:00:00",
+      "scheduled_end": "2025-11-18T15:45:00",
+      "duration_minutes": 45
+    },
+    {
+      "user_id": 6,
+      "task_type": "Meeting",
+      "priority": "MEDIUM",
+      "scheduled_start": "2025-11-19T09:00:00",
+      "scheduled_end": "2025-11-19T09:30:00",
+      "duration_minutes": 30
+    },
+    {
+      "user_id": 6,
+      "task_type": "Meeting",
+      "priority": "MEDIUM",
+      "scheduled_start": "2025-11-19T09:30:00",
+      "scheduled_end": "2025-11-19T10:00:00",
+      "duration_minutes": 30
+    },
+    {
+      "user_id": 6,
+      "task_type": "Meeting",
+      "priority": "MEDIUM",
+      "scheduled_start": "2025-11-19T10:00:00",
+      "scheduled_end": "2025-11-19T10:45:00",
+      "duration_minutes": 45
+    },
+    {
+      "user_id": 6,
+      "task_type": "Meeting",
+      "priority": "MEDIUM",
+      "scheduled_start": "2025-11-19T12:00:00",
+      "scheduled_end": "2025-11-19T13:30:00",
+      "duration_minutes": 90
+    },
+    {
+      "user_id": 6,
+      "task_type": "Meeting",
+      "priority": "MEDIUM",
+      "scheduled_start": "2025-11-19T13:00:00",
+      "scheduled_end": "2025-11-19T14:00:00",
+      "duration_minutes": 60
+    },
+    {
+      "user_id": 6,
+      "task_type": "Meeting",
+      "priority": "MEDIUM",
+      "scheduled_start": "2025-11-19T17:00:00",
+      "scheduled_end": "2025-11-19T17:30:00",
+      "duration_minutes": 30
+    },
+    {
+      "user_id": 6,
+      "task_type": "Training",
+      "priority": "MEDIUM",
+      "scheduled_start": "2025-11-19T19:00:00",
+      "scheduled_end": "2025-11-19T20:00:00",
+      "duration_minutes": 60
+    },
+    {
+      "user_id": 6,
+      "task_type": "Training",
+      "priority": "MEDIUM",
+      "scheduled_start": "2025-11-20T07:30:00",
+      "scheduled_end": "2025-11-20T08:30:00",
+      "duration_minutes": 60
+    },
+    {
+      "user_id": 6,
+      "task_type": "Meeting",
+      "priority": "MEDIUM",
+      "scheduled_start": "2025-11-20T08:00:00",
+      "scheduled_end": "2025-11-20T09:00:00",
+      "duration_minutes": 60
+    },
+    {
+      "user_id": 6,
+      "task_type": "Studies",
+      "priority": "MEDIUM",
+      "scheduled_start": "2025-11-20T09:00:00",
+      "scheduled_end": "2025-11-20T11:00:00",
+      "duration_minutes": 120
+    },
+    {
+      "user_id": 6,
+      "task_type": "Studies",
+      "priority": "MEDIUM",
+      "scheduled_start": "2025-11-20T14:00:00",
+      "scheduled_end": "2025-11-20T14:30:00",
+      "duration_minutes": 30
+    },
+    {
+      "user_id": 6,
+      "task_type": "Training",
+      "priority": "MEDIUM",
+      "scheduled_start": "2025-11-20T18:00:00",
+      "scheduled_end": "2025-11-20T19:00:00",
+      "duration_minutes": 60
+    },
+    {
+      "user_id": 6,
+      "task_type": "Meeting",
+      "priority": "MEDIUM",
+      "scheduled_start": "2025-11-21T08:00:00",
+      "scheduled_end": "2025-11-21T09:00:00",
+      "duration_minutes": 60
+    },
+    {
+      "user_id": 6,
+      "task_type": "Meeting",
+      "priority": "MEDIUM",
+      "scheduled_start": "2025-11-21T08:00:00",
+      "scheduled_end": "2025-11-21T09:00:00",
+      "duration_minutes": 60
+    },
+    {
+      "user_id": 6,
+      "task_type": "Meeting",
+      "priority": "MEDIUM",
+      "scheduled_start": "2025-11-21T12:00:00",
+      "scheduled_end": "2025-11-21T12:20:00",
+      "duration_minutes": 20
+    },
+    {
+      "user_id": 6,
+      "task_type": "Meeting",
+      "priority": "MEDIUM",
+      "scheduled_start": "2025-11-21T20:00:00",
+      "scheduled_end": "2025-11-21T22:00:00",
+      "duration_minutes": 120
+    },
+    {
+      "user_id": 6,
+      "task_type": "Training",
+      "priority": "MEDIUM",
+      "scheduled_start": "2025-11-23T07:00:00",
+      "scheduled_end": "2025-11-23T08:00:00",
+      "duration_minutes": 60
+    },
+    {
+      "user_id": 6,
+      "task_type": "Studies",
+      "priority": "MEDIUM",
+      "scheduled_start": "2025-11-23T11:00:00",
+      "scheduled_end": "2025-11-23T11:30:00",
+      "duration_minutes": 30
+    },
+    {
+      "user_id": 6,
+      "task_type": "Studies",
+      "priority": "MEDIUM",
+      "scheduled_start": "2025-11-23T16:00:00",
+      "scheduled_end": "2025-11-23T18:00:00",
+      "duration_minutes": 120
+    },
+    {
+      "user_id": 6,
+      "task_type": "Training",
+      "priority": "MEDIUM",
+      "scheduled_start": "2025-11-23T17:45:00",
+      "scheduled_end": "2025-11-23T18:30:00",
+      "duration_minutes": 45
+    },
+    {
+      "user_id": 6,
+      "task_type": "Studies",
+      "priority": "MEDIUM",
+      "scheduled_start": "2025-11-24T10:00:00",
+      "scheduled_end": "2025-11-24T11:30:00",
+      "duration_minutes": 90
+    },
+    {
+      "user_id": 6,
+      "task_type": "Studies",
+      "priority": "MEDIUM",
+      "scheduled_start": "2025-11-24T14:00:00",
+      "scheduled_end": "2025-11-24T16:00:00",
+      "duration_minutes": 120
+    },
+    {
+      "user_id": 6,
+      "task_type": "Studies",
+      "priority": "MEDIUM",
+      "scheduled_start": "2025-11-24T15:00:00",
+      "scheduled_end": "2025-11-24T16:00:00",
+      "duration_minutes": 60
+    },
+    {
+      "user_id": 6,
+      "task_type": "Meeting",
+      "priority": "MEDIUM",
+      "scheduled_start": "2025-11-24T16:00:00",
+      "scheduled_end": "2025-11-24T17:00:00",
+      "duration_minutes": 60
+    },
+    {
+      "user_id": 6,
+      "task_type": "Training",
+      "priority": "MEDIUM",
+      "scheduled_start": "2025-11-24T18:30:00",
+      "scheduled_end": "2025-11-24T19:20:00",
+      "duration_minutes": 50
+    },
+    {
+      "user_id": 6,
+      "task_type": "Meeting",
+      "priority": "MEDIUM",
+      "scheduled_start": "2025-11-25T08:00:00",
+      "scheduled_end": "2025-11-25T08:45:00",
+      "duration_minutes": 45
+    },
+    {
+      "user_id": 6,
+      "task_type": "Studies",
+      "priority": "MEDIUM",
+      "scheduled_start": "2025-11-25T10:30:00",
+      "scheduled_end": "2025-11-25T11:10:00",
+      "duration_minutes": 40
+    },
+    {
+      "user_id": 6,
+      "task_type": "Meeting",
+      "priority": "MEDIUM",
+      "scheduled_start": "2025-11-25T11:30:00",
+      "scheduled_end": "2025-11-25T13:30:00",
+      "duration_minutes": 120
+    },
+    {
+      "user_id": 6,
+      "task_type": "Training",
+      "priority": "MEDIUM",
+      "scheduled_start": "2025-11-25T19:00:00",
+      "scheduled_end": "2025-11-25T20:00:00",
+      "duration_minutes": 60
+    },
+    {
+      "user_id": 6,
+      "task_type": "Meeting",
+      "priority": "MEDIUM",
+      "scheduled_start": "2025-11-25T20:00:00",
+      "scheduled_end": "2025-11-25T22:00:00",
+      "duration_minutes": 120
+    }
+  ],
+  "metadata": {
+    "num_observations": 31,
+    "is_initialized": true
+  }
+}

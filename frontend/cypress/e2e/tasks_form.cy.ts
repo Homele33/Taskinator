@@ -35,7 +35,8 @@ describe("test task form", () => {
     const title = "Test task form with all fields"
     const description = "Test description"
     const date = "2025-07-23T10:00"
-    const formatDate = new Date(date).toLocaleString();
+    const d = new Date(date);
+    const formatDate = `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
 
     //title
     cy.get('[data-testid="task-title-input"]').type(title);

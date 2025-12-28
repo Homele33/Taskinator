@@ -29,8 +29,9 @@ const LoginPage: React.FC = () => {
     try {
       await loginWithEmail(email, password);
       router.push('/');
-    } catch (err) {
+    } catch (err: any) {
       console.error('Login error:', err);
+      setError(err?.message || 'Failed to log in. Please check your credentials and try again.');
     } finally {
       setIsLoading(false);
     }
@@ -70,13 +71,11 @@ const LoginPage: React.FC = () => {
         </div>
 
         {error && (
-          <div className="alert alert-error mt-4">
-            <div className="flex-1">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" className="w-6 h-6 mx-2 stroke-current">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"></path>
-              </svg>
-              <label>{error}</label>
-            </div>
+          <div role="alert" className="alert alert-error mb-4">
+            <svg xmlns="http://www.w3.org/2000/svg" className="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span>{error}</span>
           </div>
         )}
 

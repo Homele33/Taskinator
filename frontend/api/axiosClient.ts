@@ -35,6 +35,14 @@ apiClient.interceptors.response.use(
     const status = error?.response?.status;
     const data   = error?.response?.data;
     const url    = `${error?.config?.baseURL || ""}${error?.config?.url || ""}`;
+    
+    // Silent handling for 409 Conflict - these are expected and handled gracefully
+    if (status === 409) {
+      console.log(`[409 Conflict] ${url} - Triggering conflict resolution flow`);
+      return Promise.reject(error);
+    }
+    
+    // Log other errors for debugging
     console.error("API error:", { url, status, data });
     return Promise.reject(error);
   }

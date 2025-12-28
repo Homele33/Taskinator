@@ -1,0 +1,244 @@
+{
+  "user_id": 1,
+  "network_structure": {
+    "nodes": {
+      "WorkdayWindow": {
+        "states": [
+          "NONE",
+          "EARLY_BIRD",
+          "STANDARD",
+          "NIGHT_OWL",
+          "FLEXIBLE"
+        ],
+        "parents": [],
+        "cpt": null
+      },
+      "FocusPeakState": {
+        "states": [
+          "MORNING",
+          "AFTERNOON",
+          "EVENING",
+          "NONE"
+        ],
+        "parents": [],
+        "cpt": null
+      },
+      "DaysOffPattern": {
+        "states": [
+          "NO_DAYS_OFF",
+          "WEEKEND_ONLY",
+          "MIXED",
+          "HEAVY"
+        ],
+        "parents": [],
+        "cpt": null
+      },
+      "FlexibilityLevel": {
+        "states": [
+          "LOW",
+          "MEDIUM",
+          "HIGH",
+          "UNKNOWN"
+        ],
+        "parents": [],
+        "cpt": null
+      },
+      "DeadlineBehavior": {
+        "states": [
+          "EARLY",
+          "ON_TIME",
+          "LAST_MINUTE",
+          "UNKNOWN"
+        ],
+        "parents": [],
+        "cpt": null
+      },
+      "DurationPreference": {
+        "states": [
+          "SHORT",
+          "MEDIUM",
+          "LONG"
+        ],
+        "parents": [],
+        "cpt": null
+      },
+      "UserPersona": {
+        "states": [
+          "STRUCTURED",
+          "ADAPTIVE",
+          "SPONTANEOUS",
+          "WORKAHOLIC"
+        ],
+        "parents": [
+          "FlexibilityLevel",
+          "WorkdayWindow",
+          "DaysOffPattern"
+        ],
+        "cpt": {
+          "node_name": "UserPersona",
+          "table": {},
+          "is_functional": true
+        }
+      },
+      "EnergyPattern": {
+        "states": [
+          "FRONT_LOADED",
+          "BALANCED",
+          "BACK_LOADED"
+        ],
+        "parents": [
+          "FocusPeakState",
+          "WorkdayWindow"
+        ],
+        "cpt": {
+          "node_name": "EnergyPattern",
+          "table": {},
+          "is_functional": true
+        }
+      },
+      "TaskBatchingPreference": {
+        "states": [
+          "PREFERS_SINGLE",
+          "PREFERS_BATCHING"
+        ],
+        "parents": [
+          "DurationPreference",
+          "FlexibilityLevel"
+        ],
+        "cpt": {
+          "node_name": "TaskBatchingPreference",
+          "table": {},
+          "is_functional": true
+        }
+      },
+      "PlanningHorizon": {
+        "states": [
+          "SHORT_TERM",
+          "MEDIUM_TERM",
+          "LONG_TERM"
+        ],
+        "parents": [
+          "DeadlineBehavior",
+          "FlexibilityLevel"
+        ],
+        "cpt": {
+          "node_name": "PlanningHorizon",
+          "table": {},
+          "is_functional": true
+        }
+      },
+      "PreferredTimeOfDay_Meeting": {
+        "states": [
+          "MORNING",
+          "MIDDAY",
+          "AFTERNOON",
+          "EVENING",
+          "NIGHT"
+        ],
+        "parents": [
+          "EnergyPattern",
+          "UserPersona"
+        ],
+        "cpt": {
+          "node_name": "PreferredTimeOfDay_Meeting",
+          "table": {},
+          "is_functional": true
+        }
+      },
+      "PreferredDayType_Meeting": {
+        "states": [
+          "WEEKDAY",
+          "WEEKEND",
+          "ANY"
+        ],
+        "parents": [
+          "DaysOffPattern"
+        ],
+        "cpt": {
+          "node_name": "PreferredDayType_Meeting",
+          "table": {},
+          "is_functional": true
+        }
+      },
+      "PreferredTimeOfDay_Training": {
+        "states": [
+          "MORNING",
+          "MIDDAY",
+          "AFTERNOON",
+          "EVENING",
+          "NIGHT"
+        ],
+        "parents": [
+          "EnergyPattern",
+          "UserPersona"
+        ],
+        "cpt": {
+          "node_name": "PreferredTimeOfDay_Training",
+          "table": {},
+          "is_functional": true
+        }
+      },
+      "PreferredDayType_Training": {
+        "states": [
+          "WEEKDAY",
+          "WEEKEND",
+          "ANY"
+        ],
+        "parents": [
+          "DaysOffPattern"
+        ],
+        "cpt": {
+          "node_name": "PreferredDayType_Training",
+          "table": {},
+          "is_functional": true
+        }
+      },
+      "PreferredTimeOfDay_Studies": {
+        "states": [
+          "MORNING",
+          "MIDDAY",
+          "AFTERNOON",
+          "EVENING",
+          "NIGHT"
+        ],
+        "parents": [
+          "EnergyPattern",
+          "UserPersona"
+        ],
+        "cpt": {
+          "node_name": "PreferredTimeOfDay_Studies",
+          "table": {},
+          "is_functional": true
+        }
+      },
+      "PreferredDayType_Studies": {
+        "states": [
+          "WEEKDAY",
+          "WEEKEND",
+          "ANY"
+        ],
+        "parents": [
+          "DaysOffPattern"
+        ],
+        "cpt": {
+          "node_name": "PreferredDayType_Studies",
+          "table": {},
+          "is_functional": true
+        }
+      }
+    },
+    "evidence": {
+      "WorkdayWindow": "STANDARD",
+      "FocusPeakState": "MORNING",
+      "DaysOffPattern": "WEEKEND_ONLY",
+      "FlexibilityLevel": "LOW",
+      "DeadlineBehavior": "ON_TIME",
+      "DurationPreference": "MEDIUM"
+    }
+  },
+  "observations": [],
+  "metadata": {
+    "num_observations": 0,
+    "is_initialized": true
+  }
+}
