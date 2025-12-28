@@ -541,6 +541,26 @@ def get_manual_suggestions():
     
     data = request.get_json(silent=True) or {}
     
+    # CRITICAL FIX: Extract page and page_size FIRST, before any logic that uses them
+    # Pagination support - must be at the very beginning
+    try:
+        page = int(data.get("page", 1))
+    except (ValueError, TypeError):
+        page = 1
+    if page < 1:
+        page = 1
+    
+    # UX: Allow customizable page size, default to 3 for optimal chunks
+    try:
+        page_size = int(data.get("pageSize", 3))
+    except (ValueError, TypeError):
+        page_size = 3
+    # Cap at reasonable maximum
+    if page_size < 1:
+        page_size = 3
+    if page_size > 20:
+        page_size = 20
+    
     # Parse input parameters
     duration = int(data.get("durationMinutes", 60))
     task_type = data.get("task_type", "Meeting")
@@ -750,28 +770,8 @@ def get_manual_suggestions():
         print(f"[WINDOW CALCULATION] ============================================\n")
     # Any other strategy leaves window_end as None for default horizon
     
-    # Pagination support
-    # CRITICAL FIX: Get page from request body (data), not query params (args)
-    # Frontend sends { page: 2, pageSize: 3, ... } in POST body
-    try:
-        page = int(data.get("page", 1))
-    except (ValueError, TypeError):
-        page = 1
-    if page < 1:
-        page = 1
-    
-    # UX: Allow customizable page size, default to 3 for optimal chunks
-    try:
-        page_size = int(data.get("pageSize", 3))
-    except (ValueError, TypeError):
-        page_size = 3
-    # Cap at reasonable maximum
-    if page_size < 1:
-        page_size = 3
-    if page_size > 20:
-        page_size = 20
-    
     # CRITICAL PAGINATION CHECK: Validate that date lock is maintained on page 2+
+    # NOTE: page and page_size are already extracted at the beginning of the function
     print(f"\n[PAGINATION CHECK] ============================================")
     print(f"[PAGINATION CHECK] Page: {page}")
     print(f"[PAGINATION CHECK] scheduledStart present: {data.get('scheduledStart') is not None}")
