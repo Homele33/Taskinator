@@ -2,6 +2,7 @@
 
 import { useState, useEffect, ReactNode } from "react";
 import { Task } from "./tasksTypes";
+import { formatDate } from "@/utils/dateFormat";
 
 // Fuzzy search implementation
 const fuzzySearch = (items: Task[], query: string): Task[] => {
@@ -186,7 +187,7 @@ export const FuzzySearchBar = ({
                       </span>
                       {task.dueDate && (
                         <span className="text-xs text-base-content">
-                          Due: {new Date(task.dueDate).toLocaleDateString()}
+                          Due: {formatDate(task.dueDate)}
                         </span>
                       )}
                       {task.subtasks.length > 0 && (

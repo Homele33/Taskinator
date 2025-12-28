@@ -102,6 +102,105 @@ def upsert_preferences():
     db.session.add(pref)
     db.session.commit()
 
+    # NEW: Initialize Bayesian Network from preferences
+    # This trains the BN immediately so user can start creating tasks
+    from Ai.network.inference import initialize_bn_for_user
+    try:
+        bn_success = initialize_bn_for_user(g.user.id)
+        if not bn_success:
+            print(f"[Preferences] Warning: BN initialization failed for user {g.user.id}")
+    except Exception as e:
+        print(f"[Preferences] Error initializing BN: {e}")
+        # Don't fail the request if BN init fails - preferences are still saved
+
     out = pref.to_json()
     out["exists"] = True
     return jsonify(out), 201
+
+@preferences_bp.patch("")
+@auth_required
+def update_preferences():
+    """
+    PATCH endpoint to update existing preferences.
+    Unlike PUT (one-time setup), this allows users to modify their preferences.
+    """
+    existing = UserPreferences.query.filter_by(user_id=g.user.id).first()
+    if not existing:
+        return jsonify({"message": "No preferences found. Use PUT to create initial preferences."}), 404
+
+    data = request.get_json() or {}
+    
+    print(f"\n[PREFERENCES UPDATE] ============================================")
+    print(f"[PREFERENCES UPDATE] Updating preferences for user {g.user.id}")
+    print(f"[PREFERENCES UPDATE] Current workday_pref_start: {existing.workday_pref_start}")
+    print(f"[PREFERENCES UPDATE] Request data: {data}")
+    
+    # Update only the fields that are present in the request
+    
+    # daysOff validation
+    if "daysOff" in data:
+        days_off = data.get("daysOff", [])
+        if not isinstance(days_off, list) or any(
+            not isinstance(d, int) or d < 0 or d > 6 for d in days_off
+        ):
+            return jsonify({"message": "daysOff must be a list of integers in range 0..6"}), 400
+        existing.days_off = sorted(set(days_off))
+        print(f"[PREFERENCES UPDATE] Updated days_off to: {existing.days_off}")
+
+    # Parse and update times
+    try:
+        if "workdayPrefStart" in data:
+            workday_pref_start = parse_time(data.get("workdayPrefStart"))
+            print(f"[PREFERENCES UPDATE] Parsed workday_pref_start: {workday_pref_start}")
+            existing.workday_pref_start = workday_pref_start
+            
+        if "workdayPrefEnd" in data:
+            workday_pref_end = parse_time(data.get("workdayPrefEnd"))
+            print(f"[PREFERENCES UPDATE] Parsed workday_pref_end: {workday_pref_end}")
+            existing.workday_pref_end = workday_pref_end
+            
+        if "focusPeakStart" in data:
+            existing.focus_peak_start = parse_time(data.get("focusPeakStart"))
+            
+        if "focusPeakEnd" in data:
+            existing.focus_peak_end = parse_time(data.get("focusPeakEnd"))
+    except ValueError as e:
+        return jsonify({"message": str(e)}), 400
+
+    # Validate workday times
+    if existing.workday_pref_start and existing.workday_pref_end and existing.workday_pref_end <= existing.workday_pref_start:
+        return jsonify({"message": "workdayPrefEnd must be after workdayPrefStart"}), 400
+
+    # Validate focus times
+    if existing.focus_peak_start and existing.focus_peak_end and existing.focus_peak_end <= existing.focus_peak_start:
+        return jsonify({"message": "focusPeakEnd must be after focusPeakStart"}), 400
+
+    # Update enums
+    if "deadlineBehavior" in data:
+        deadline_behavior = data.get("deadlineBehavior")
+        if deadline_behavior not in (None, "EARLY", "ON_TIME", "LAST_MINUTE"):
+            return jsonify({"message": "deadlineBehavior must be one of: EARLY, ON_TIME, LAST_MINUTE"}), 400
+        existing.deadline_behavior = deadline_behavior
+
+    if "flexibility" in data:
+        flexibility = data.get("flexibility")
+        if flexibility not in (None, "LOW", "MEDIUM", "HIGH"):
+            return jsonify({"message": "flexibility must be one of: LOW, MEDIUM, HIGH"}), 400
+        existing.flexibility = flexibility
+
+    # Update default duration
+    if "defaultDurationMinutes" in data:
+        try:
+            existing.default_duration_minutes = int(data.get("defaultDurationMinutes"))
+        except (TypeError, ValueError):
+            return jsonify({"message": "defaultDurationMinutes must be an integer"}), 400
+
+    db.session.commit()
+    
+    print(f"[PREFERENCES UPDATE] Successfully updated preferences")
+    print(f"[PREFERENCES UPDATE] New workday_pref_start: {existing.workday_pref_start}")
+    print(f"[PREFERENCES UPDATE] ============================================\n")
+
+    out = existing.to_json()
+    out["exists"] = True
+    return jsonify(out), 200

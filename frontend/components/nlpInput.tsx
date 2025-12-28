@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import apiClient from "@/api/axiosClient";
 import { isAxiosError } from "axios";
+import ConflictResolverModal from "./ConflictResolverModal";
+import SuggestionSelectionModal from "./SuggestionSelectionModal";
 
 type Suggestion = {
   scheduledStart: string;
@@ -25,20 +27,37 @@ const NaturalLanguageTaskInput: React.FC<NaturalLanguageTaskInputProps> = ({ onT
     task_type?: "Meeting" | "Training" | "Studies";
     priority?: "LOW" | "MEDIUM" | "HIGH";
     durationMinutes?: number | null;
+    dueDateTime?: string | null;
   } | null>(null);
   const [lastQuery, setLastQuery] = useState<string>("");
 
   // paging for suggestions (1-based)
   const [page, setPage] = useState(1);
+  const [hasMorePages, setHasMorePages] = useState(true);
+
+  // Conflict resolution modal state
+  const [showConflictModal, setShowConflictModal] = useState(false);
+  
+  // Track the last strategy used for pagination
+  const [lastStrategy, setLastStrategy] = useState<"day" | "week" | "month" | "auto">("auto");
 
   const toast = (msg: string) => alert(msg);
 
   const resetState = () => {
+    console.log("[RESET STATE] ============================================");
+    console.log("[RESET STATE] resetState() called!");
+    console.log("[RESET STATE] Current parsedMeta before reset:", parsedMeta);
+    console.log("[RESET STATE] Stack trace:", new Error().stack);
+    console.log("[RESET STATE] ============================================");
+    
     setInputText("");
     setSuggestions([]);
     setParsedMeta(null);
     setShowModal(false);
     setPage(1); // <-- important: reset paging
+    setHasMorePages(true); // Reset hasMorePages
+    setLastStrategy("auto"); // Reset strategy
+    setShowConflictModal(false); // Reset conflict modal state
   };
 
   // Parse text → if complete create immediately; if partial show suggestions modal
@@ -51,7 +70,7 @@ const NaturalLanguageTaskInput: React.FC<NaturalLanguageTaskInputProps> = ({ onT
     try {
       setLastQuery(text);
       const res = await apiClient.post("/ai/parseTask", { text });
-      const data = res.data as {
+      const data: {
         status: "complete" | "partial";
         parsed: {
           title?: string;
@@ -61,27 +80,141 @@ const NaturalLanguageTaskInput: React.FC<NaturalLanguageTaskInputProps> = ({ onT
           priority?: "LOW" | "MEDIUM" | "HIGH";
         };
         suggestions?: Suggestion[];
-      };
+        shouldCreateDirectly?: boolean;
+        task?: any;
+        case?: string;
+      } = res.data;
 
-      if (data.status === "complete") {
-        await apiClient.post("/ai/createFromText", { text });
-        resetState();
-        await onTaskCreated?.();
-        return;
+      if (data.status === "complete" || data.shouldCreateDirectly) {
+        // Parse metadata for potential conflict resolution
+        const parsed = data.parsed || {};
+        setParsedMeta({
+          title: parsed.title || "New task",
+          task_type: parsed.task_type || "Meeting",
+          priority: (parsed.priority as any) || "MEDIUM",
+          durationMinutes: parsed.durationMinutes ?? null,
+          dueDateTime: parsed.dueDateTime ?? null,
+        });
+
+        // CASE 4: Backend already created task with default duration
+        if (data.shouldCreateDirectly && data.task) {
+          console.log("[CASE 4] Task already created by backend:", data.task);
+          console.log("[CASE 4] Case:", data.case);
+          resetState();
+          await onTaskCreated?.();
+          return;
+        }
+
+        // CASE 2.A: All fields present, attempt creation
+        try {
+          await apiClient.post("/ai/createFromText", { text });
+          resetState();
+          await onTaskCreated?.();
+          return;
+        } catch (createErr: any) {
+          // Handle 409 Conflict - time slot already occupied
+          if (isAxiosError(createErr) && createErr.response?.status === 409) {
+            console.log("Conflict detected, showing resolution modal");
+            
+            // CRITICAL FIX: Extract task data from 409 response for suggestions
+            const conflictData = createErr.response?.data;
+            console.log("Conflict data from 409:", conflictData);
+            
+            // Update parsedMeta with conflict data so suggest endpoint gets correct date
+            setParsedMeta({
+              title: conflictData.title || parsed.title || "New task",
+              task_type: conflictData.task_type || parsed.task_type || "Meeting",
+              priority: conflictData.priority || parsed.priority || "MEDIUM",
+              durationMinutes: conflictData.durationMinutes ?? parsed.durationMinutes ?? null,
+              dueDateTime: conflictData.scheduledStart || conflictData.dueDate || parsed.dueDateTime || null,
+            });
+            
+            setShowConflictModal(true);
+            setIsLoading(false);
+            return;
+          }
+          // Re-throw other errors to be handled by outer catch
+          throw createErr;
+        }
       }
 
       const parsed = data.parsed || {};
-      setParsedMeta({
+      const extractedDate = parsed.dueDateTime ?? null;
+      
+      console.log("[NLP PARSE] ============================================");
+      console.log("[NLP PARSE] Parsed data from backend:", parsed);
+      console.log("[NLP PARSE] Extracted date:", extractedDate);
+      console.log("[NLP PARSE] ============================================");
+      
+      const newParsedMeta = {
         title: parsed.title || "New task",
         task_type: parsed.task_type || "Meeting",
         priority: (parsed.priority as any) || "MEDIUM",
         durationMinutes: parsed.durationMinutes ?? null,
-      });
-      setSuggestions(data.suggestions || []);
-      setPage(1);            // <-- start paging for this query from 1
-      setShowModal(true);
+        dueDateTime: extractedDate,
+      };
+      
+      console.log("[NLP PARSE] Setting parsedMeta to:", newParsedMeta);
+      setParsedMeta(newParsedMeta);
+      
+      // If we have a date but no exact time (partial status), fetch date-locked suggestions
+      // CRITICAL: Use 'day' strategy and pass scheduledStart to lock to the extracted date
+      if (extractedDate && data.status === "partial") {
+        console.log("[NLP DATE LOCK] Date provided, fetching suggestions for:", extractedDate);
+        setLastStrategy("day"); // Lock to 'day' strategy
+        
+        try {
+          const res = await apiClient.post("/ai/suggest", {
+            durationMinutes: parsed.durationMinutes ?? 60,
+            task_type: parsed.task_type || "Meeting",
+            strategy: "day", // Force 'day' strategy for date locking
+            referenceDate: new Date(extractedDate).toISOString(),
+            scheduledStart: new Date(extractedDate).toISOString(), // CRITICAL: Lock to this date
+            page: 1,
+            pageSize: 3,
+          });
+          
+          const suggestData = res.data;
+          setSuggestions(suggestData.suggestions || []);
+          setPage(1);
+          setShowModal(true);
+        } catch (suggestErr) {
+          console.error("Failed to fetch date-locked suggestions:", suggestErr);
+          // Fallback to original suggestions from parseTask
+          setSuggestions(data.suggestions || []);
+          setPage(1);
+          setShowModal(true);
+        }
+      } else {
+        // No date provided, use original suggestions
+        setSuggestions(data.suggestions || []);
+        setPage(1);
+        setShowModal(true);
+      }
     } catch (err: any) {
       if (isAxiosError(err)) {
+        // CRITICAL FIX: Handle 409 from parseTask (overlap detected during parse)
+        if (err.response?.status === 409) {
+          console.log("Conflict detected in parseTask, showing resolution modal");
+          
+          const conflictData = err.response?.data;
+          console.log("Conflict data from parseTask 409:", conflictData);
+          
+          // Extract parsed data from 409 response
+          const parsed = conflictData.parsed || {};
+          setParsedMeta({
+            title: conflictData.title || parsed.title || "New task",
+            task_type: conflictData.task_type || parsed.task_type || "Meeting",
+            priority: conflictData.priority || parsed.priority || "MEDIUM",
+            durationMinutes: conflictData.durationMinutes ?? parsed.durationMinutes ?? null,
+            dueDateTime: conflictData.scheduledStart || conflictData.dueDate || parsed.dueDateTime || null,
+          });
+          
+          setShowConflictModal(true);
+          setIsLoading(false);
+          return;
+        }
+        
         console.error("parseTask failed", {
           status: err.response?.status,
           data: err.response?.data,
@@ -150,23 +283,258 @@ const NaturalLanguageTaskInput: React.FC<NaturalLanguageTaskInputProps> = ({ onT
     }
   };
 
-  // Refresh suggestions list (next page)
-  const refreshSuggestions = async () => {
-    if (!lastQuery) return;
+  // Navigate to specific page of suggestions
+  const fetchSuggestionsPage = async (targetPage: number, preservedConstraints?: {scheduledStart?: string; strategy?: string; durationMinutes?: number}) => {
+    console.log("[PAGINATION] ============================================");
+    console.log("[PAGINATION] fetchSuggestionsPage called");
+    console.log("[PAGINATION] Target page:", targetPage);
+    console.log("[PAGINATION] Preserved constraints from modal:", preservedConstraints);
+    console.log("[PAGINATION] parsedMeta exists:", !!parsedMeta);
+    console.log("[PAGINATION] Full parsedMeta:", parsedMeta);
+    
+    // CRITICAL: If we have preserved constraints from modal, use them
+    // Otherwise fall back to parsedMeta
+    if (!preservedConstraints && !parsedMeta) {
+      console.error("[PAGINATION] ❌ CRITICAL ERROR: No constraints OR parsedMeta available");
+      console.error("[PAGINATION] ❌ Cannot paginate without constraints");
+      return;
+    }
+    
+    if (targetPage < 1) {
+      console.error("[PAGINATION] Invalid page number:", targetPage);
+      return;
+    }
+    
+    // CRITICAL: Triple-fallback data binding for date constraint
+    // Priority: 1) preservedConstraints (from modal), 2) parsedMeta (from NLP), 3) null
+    const lockedDate = preservedConstraints?.scheduledStart || parsedMeta?.dueDateTime || null;
+    const lockedDuration = preservedConstraints?.durationMinutes || parsedMeta?.durationMinutes || null;
+    const lockedTaskType = parsedMeta?.task_type || "Meeting";
+    
+    console.log("[PAGINATION STATE CHECK] ============================================");
+    console.log("[PAGINATION STATE CHECK] Data Source Priority:");
+    console.log("[PAGINATION STATE CHECK]   1. preservedConstraints.scheduledStart:", preservedConstraints?.scheduledStart);
+    console.log("[PAGINATION STATE CHECK]   2. parsedMeta.dueDateTime:", parsedMeta?.dueDateTime);
+    console.log("[PAGINATION STATE CHECK] RESOLVED VALUES:");
+    console.log("[PAGINATION STATE CHECK]   - Locked Date:", lockedDate);
+    console.log("[PAGINATION STATE CHECK]   - Locked Duration:", lockedDuration);
+    console.log("[PAGINATION STATE CHECK]   - Task Type:", lockedTaskType);
+    console.log("[PAGINATION STATE CHECK]   - Strategy:", lastStrategy);
+    
+    if (lastStrategy === "day" && !lockedDate) {
+      console.error("[PAGINATION STATE CHECK] ❌ CRITICAL: Strategy is 'day' but no date in parsedMeta!");
+      console.error("[PAGINATION STATE CHECK] ❌ Cannot maintain date lock without date!");
+    }
+    console.log("[PAGINATION STATE CHECK] ============================================");
+    
     setIsLoading(true);
     try {
-      const nextPage = page + 1;
-      const res = await apiClient.post(`/ai/parseTask?page=${nextPage}`, { text: lastQuery });
-      const data = res.data;
-      if (Array.isArray(data?.suggestions) && data.suggestions.length) {
-        setSuggestions(data.suggestions);
-        setPage(nextPage);
-      } else {
-        toast("No more suggestions");
+      // Use the task's dueDateTime for date context
+      let referenceDate = new Date().toISOString();
+      if (lockedDate) {
+        referenceDate = new Date(lockedDate).toISOString();
+        console.log("[PAGINATION] ✅ Using locked date:", referenceDate);
       }
-    } catch (e) {
-      console.error("refresh suggestions error", e);
-      toast("Failed to refresh suggestions");
+      
+      // CRITICAL: Use local variables to ensure constraints are preserved
+      const requestPayload = {
+        durationMinutes: lockedDuration ?? 60,
+        task_type: lockedTaskType || parsedMeta?.task_type || "Meeting",
+        strategy: preservedConstraints?.strategy || lastStrategy,
+        referenceDate: referenceDate,
+        page: targetPage,
+        pageSize: 3,
+        dueDate: lockedDate || null,
+        scheduledStart: lockedDate || null,  // CRITICAL: Must be present for date-locked searches
+      };
+      
+      console.log("[PAGINATION] ============================================");
+      console.log("[PAGINATION] Request payload for page", targetPage);
+      console.log("[PAGINATION]   - scheduledStart:", requestPayload.scheduledStart);
+      console.log("[PAGINATION]   - strategy:", requestPayload.strategy);
+      console.log("[PAGINATION]   - referenceDate:", requestPayload.referenceDate);
+      console.log("[PAGINATION]   - page:", requestPayload.page);
+      
+      // CRITICAL VALIDATION: Ensure scheduledStart is present for date-locked searches
+      if (lastStrategy === "day" && !requestPayload.scheduledStart) {
+        console.error("[PAGINATION] ⚠️  WARNING: Strategy is 'day' but scheduledStart is null!");
+        console.error("[PAGINATION] ⚠️  This will cause the backend to lose the date lock!");
+        console.error("[PAGINATION] ⚠️  parsedMeta.dueDateTime:", parsedMeta?.dueDateTime);
+        console.error("[PAGINATION] ⚠️  preservedConstraints:", preservedConstraints);
+      } else if (lastStrategy === "day" && requestPayload.scheduledStart) {
+        console.log("[PAGINATION] ✅ Date-locked request: scheduledStart is present");
+      }
+      
+      console.log("[PAGINATION] ============================================");
+      
+      // CRITICAL DEBUG: Show EXACT payload that will be sent to backend
+      console.log("[PAGINATION DEBUG] ============================================");
+      console.log("[PAGINATION DEBUG] About to send axios.post to /ai/suggest");
+      console.log("[PAGINATION DEBUG] Sending date to backend:", requestPayload.scheduledStart);
+      console.log("[PAGINATION DEBUG] Full payload object:", requestPayload);
+      console.log("[PAGINATION DEBUG] Serialized JSON:", JSON.stringify(requestPayload, null, 2));
+      console.log("[PAGINATION DEBUG] scheduledStart type:", typeof requestPayload.scheduledStart);
+      console.log("[PAGINATION DEBUG] scheduledStart value:", requestPayload.scheduledStart);
+      console.log("[PAGINATION DEBUG] strategy:", requestPayload.strategy);
+      console.log("[PAGINATION DEBUG] page:", requestPayload.page);
+      
+      if (requestPayload.scheduledStart) {
+        console.log("[PAGINATION DEBUG] ✅ Date present in request - backend will maintain date lock");
+      } else {
+        console.warn("[PAGINATION DEBUG] ⚠️ No date in request - backend will search all dates");
+      }
+      console.log("[PAGINATION DEBUG] ============================================");
+      
+      // Call suggest endpoint with page parameter
+      const res = await apiClient.post("/ai/suggest", requestPayload);
+      
+      const data = res.data;
+      
+      console.log("[DEBUG UI] API response data:", data);
+      console.log("[DEBUG UI] New suggestions received:", data.suggestions);
+      console.log("[DEBUG UI] Number of suggestions:", data.suggestions?.length);
+      
+      if (Array.isArray(data?.suggestions) && data.suggestions.length) {
+        console.log("[PAGINATION] Received", data.suggestions.length, "suggestions for page", targetPage);
+        
+        // Force new array reference to trigger React re-render
+        setSuggestions([...data.suggestions]);
+        setPage(targetPage);
+        setHasMorePages(true); // Reset hasMorePages when we get results
+        
+        console.log("[DEBUG UI] State updated with new suggestions");
+        console.log("[DEBUG UI] New page state:", targetPage);
+      } else {
+        // No more results - disable Next button, stay on current page
+        console.log("[PAGINATION] No more suggestions available - disabling Next button");
+        setHasMorePages(false);
+      }
+    } catch (e: any) {
+      console.error("[PAGINATION] Error fetching suggestions:", e);
+      
+      // Handle backend validation error for missing scheduledStart
+      if (isAxiosError(e) && e.response?.status === 400) {
+        const errorData = e.response?.data;
+        if (errorData?.error === "PAGINATION_CONSTRAINT_VIOLATION") {
+          console.error("[PAGINATION] ❌❌❌ BACKEND VALIDATION ERROR ❌❌❌");
+          console.error("[PAGINATION] Backend rejected pagination request:");
+          console.error("[PAGINATION] Message:", errorData.message);
+          console.error("[PAGINATION] Details:", errorData.details);
+          toast(`Pagination Error: ${errorData.message}\n\nHint: ${errorData.details?.hint}`);
+          
+          // Close modal since we can't paginate without constraints
+          setShowModal(false);
+          resetState();
+          return;
+        }
+      }
+      
+      toast("Failed to fetch suggestions");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Next page handler - now accepts preserved constraints from modal
+  const refreshSuggestions = async (preservedConstraints?: {scheduledStart?: string; strategy?: string; durationMinutes?: number}) => {
+    console.log("[REFRESH SUGGESTIONS] ============================================");
+    console.log("[REFRESH SUGGESTIONS] Called from modal Next button");
+    console.log("[REFRESH SUGGESTIONS] Current page:", page);
+    console.log("[REFRESH SUGGESTIONS] Next page will be:", page + 1);
+    console.log("[REFRESH SUGGESTIONS] ============================================");
+    console.log("[REFRESH SUGGESTIONS] PRESERVED CONSTRAINTS FROM MODAL:");
+    console.log("[REFRESH SUGGESTIONS]   - scheduledStart:", preservedConstraints?.scheduledStart);
+    console.log("[REFRESH SUGGESTIONS]   - strategy:", preservedConstraints?.strategy);
+    console.log("[REFRESH SUGGESTIONS]   - durationMinutes:", preservedConstraints?.durationMinutes);
+    console.log("[REFRESH SUGGESTIONS] ============================================");
+    console.log("[REFRESH SUGGESTIONS] Current parsedMeta:", parsedMeta);
+    console.log("[REFRESH SUGGESTIONS] parsedMeta.dueDateTime:", parsedMeta?.dueDateTime);
+    console.log("[REFRESH SUGGESTIONS] lastStrategy:", lastStrategy);
+    
+    // CRITICAL: Use preserved constraints if provided, otherwise fall back to parsedMeta
+    const dateToUse = preservedConstraints?.scheduledStart || parsedMeta?.dueDateTime;
+    const durationToUse = preservedConstraints?.durationMinutes || parsedMeta?.durationMinutes;
+    const strategyToUse = preservedConstraints?.strategy || lastStrategy;
+    
+    console.log("[REFRESH SUGGESTIONS] ============================================");
+    console.log("[REFRESH SUGGESTIONS] RESOLVED VALUES FOR PAGINATION:");
+    console.log("[REFRESH SUGGESTIONS]   - Date to use:", dateToUse);
+    console.log("[REFRESH SUGGESTIONS]   - Duration to use:", durationToUse);
+    console.log("[REFRESH SUGGESTIONS]   - Strategy to use:", strategyToUse);
+    
+    if (preservedConstraints?.scheduledStart) {
+      console.log("[REFRESH SUGGESTIONS] ✅ Using MODAL'S preserved date:", preservedConstraints.scheduledStart);
+    } else if (parsedMeta?.dueDateTime) {
+      console.log("[REFRESH SUGGESTIONS] ⚠️ Using parsedMeta date (no modal constraints):", parsedMeta.dueDateTime);
+    } else {
+      console.error("[REFRESH SUGGESTIONS] ❌ NO DATE AVAILABLE - pagination will fail!");
+    }
+    
+    console.log("[REFRESH SUGGESTIONS] About to call fetchSuggestionsPage...");
+    console.log("[REFRESH SUGGESTIONS] ============================================");
+    await fetchSuggestionsPage(page + 1, preservedConstraints);
+  };
+
+  // Previous page handler
+  const goToPreviousPage = async () => {
+    if (page > 1) {
+      setHasMorePages(true); // Reset when going back (might have more pages from current position)
+      await fetchSuggestionsPage(page - 1);
+    }
+  };
+
+  // Back to strategy selection
+  const backToStrategySelection = () => {
+    console.log("[UI] User requested back to strategy selection");
+    setShowModal(false);
+    setShowConflictModal(true);
+    setPage(1); // Reset page when going back
+    setHasMorePages(true); // Reset hasMorePages
+  };
+
+  // Handle conflict resolution strategy selection
+  const handleConflictResolve = async (strategy: "day" | "week" | "month" | "auto") => {
+    if (!parsedMeta) return;
+
+    setIsLoading(true);
+    setShowConflictModal(false);
+    
+    // Store strategy for pagination
+    setLastStrategy(strategy);
+
+    try {
+      // CRITICAL FIX: Use the task's dueDateTime, not today's date!
+      let referenceDate = new Date().toISOString();
+      if (parsedMeta.dueDateTime) {
+        referenceDate = new Date(parsedMeta.dueDateTime).toISOString();
+        console.log("[NLP CONFLICT] Using task date:", referenceDate);
+      } else {
+        console.log("[NLP CONFLICT] No dueDateTime, using current date:", referenceDate);
+      }
+
+      const res = await apiClient.post("/ai/suggest", {
+        durationMinutes: parsedMeta.durationMinutes ?? 60,
+        task_type: parsedMeta.task_type || "Meeting",
+        strategy: strategy,
+        referenceDate: referenceDate,
+        page: 1,  // Start at page 1
+        pageSize: 3,  // UX: Show top 3 scored suggestions per page
+        dueDate: parsedMeta.dueDateTime || null,
+        scheduledStart: parsedMeta.dueDateTime || null, // CRITICAL: Pass date to lock suggestions
+      });
+
+      const data = res.data;
+      if (Array.isArray(data?.suggestions) && data.suggestions.length > 0) {
+        setSuggestions(data.suggestions);
+        setPage(1);
+        setHasMorePages(true);
+        setShowModal(true); // Show the existing suggestion modal
+      } else {
+        toast("No available time slots found for the selected strategy.");
+      }
+    } catch (err: any) {
+      console.error("Failed to fetch conflict resolution suggestions:", err);
+      toast("Failed to fetch alternative time slots. Please try again.");
     } finally {
       setIsLoading(false);
     }
@@ -240,64 +608,59 @@ const NaturalLanguageTaskInput: React.FC<NaturalLanguageTaskInputProps> = ({ onT
           </button>
         </form>
 
+        {/* Conflict Resolution Modal */}
+        <ConflictResolverModal
+          isOpen={showConflictModal}
+          onClose={() => setShowConflictModal(false)}
+          onResolve={handleConflictResolve}
+        />
+
         {/* Suggestions modal */}
-        {showModal && (
-          <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-            <div className="bg-base-100 rounded-lg shadow-xl w-full max-w-lg p-6">
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="text-lg font-bold">Choose a time slot</h3>
-                <button className="btn btn-ghost btn-sm" onClick={() => setShowModal(false)}>
-                  ✕
-                </button>
-              </div>
-
-              {parsedMeta && (
-                <div className="mb-4 text-sm opacity-80">
-                  <div><b>Title:</b> {parsedMeta.title}</div>
-                  <div><b>Type:</b> {parsedMeta.task_type}</div>
-                  <div><b>Priority:</b> {parsedMeta.priority}</div>
-                  {parsedMeta.durationMinutes ? (
-                    <div><b>Duration:</b> {parsedMeta.durationMinutes} minutes</div>
-                  ) : (
-                    <div><b>Duration:</b> from suggested start/end</div>
-                  )}
-                </div>
-              )}
-
-              <div className="space-y-3">
-                {suggestions.map((s, idx) => (
-                  <div key={idx} className="card bg-base-200">
-                    <div className="card-body flex-row items-center justify-between">
-                      <div className="text-sm">
-                        <div><b>Start:</b> {new Date(s.scheduledStart).toLocaleString()}</div>
-                        <div><b>End:</b> {new Date(s.scheduledEnd).toLocaleString()}</div>
-                        {typeof s.score === "number" && (
-                          <div><b>Score:</b> {s.score}</div>
-                        )}
-                      </div>
-                      <button className="btn btn-success btn-sm" onClick={() => handlePickSuggestion(s)}>
-                        Choose
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              <div className="mt-4 flex gap-2 justify-end">
-                <button className="btn btn-ghost" onClick={() => setShowModal(false)}>
-                  Cancel
-                </button>
-                <button
-                  className={`btn ${isLoading ? "loading" : ""}`}
-                  onClick={refreshSuggestions}
-                  disabled={isLoading}
-                >
-                  {isLoading ? "Loading..." : "Refresh suggestions"}
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
+        <SuggestionSelectionModal
+          isOpen={showModal}
+          onClose={() => {
+            console.log("[MODAL CLOSE] User closing modal");
+            setShowModal(false);
+          }}
+          suggestions={suggestions}
+          onSelect={handlePickSuggestion}
+          isLoading={isLoading}
+          metadata={parsedMeta}
+          onRefresh={(preservedConstraints) => {
+            console.log("[MODAL REFRESH] ============================================");
+            console.log("[MODAL REFRESH] Modal's onRefresh callback triggered");
+            console.log("[MODAL REFRESH] RECEIVED CONSTRAINTS FROM MODAL:");
+            console.log("[MODAL REFRESH]   - scheduledStart:", preservedConstraints?.scheduledStart);
+            console.log("[MODAL REFRESH]   - strategy:", preservedConstraints?.strategy);
+            console.log("[MODAL REFRESH]   - durationMinutes:", preservedConstraints?.durationMinutes);
+            console.log("[MODAL REFRESH] ============================================");
+            console.log("[MODAL REFRESH] Current parsedMeta:", parsedMeta);
+            console.log("[MODAL REFRESH] parsedMeta.dueDateTime:", parsedMeta?.dueDateTime);
+            console.log("[MODAL REFRESH] Current page:", page);
+            
+            if (preservedConstraints?.scheduledStart) {
+              console.log("[MODAL REFRESH] ✅ Modal passed date constraint:", preservedConstraints.scheduledStart);
+              console.log("[MODAL REFRESH] ✅ This will be used for pagination!");
+            } else {
+              console.error("[MODAL REFRESH] ❌ No date constraint from modal!");
+            }
+            
+            console.log("[MODAL REFRESH] About to call refreshSuggestions with constraints...");
+            console.log("[MODAL REFRESH] ============================================");
+            refreshSuggestions(preservedConstraints);
+          }}
+          onPrevious={goToPreviousPage}
+          onBackToOptions={backToStrategySelection}
+          page={page}
+          hasMorePages={hasMorePages}
+          isConflict={false} // This is missing info flow, not conflict
+          initialConstraints={{
+            lockedDate: parsedMeta?.dueDateTime || null,
+            lockedDuration: parsedMeta?.durationMinutes || null,
+            strategy: lastStrategy || "auto",
+            isConflict: false,
+          }}
+        />
       </div>
 
       {/* optional error area */}

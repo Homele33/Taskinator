@@ -5,6 +5,7 @@ import { SubtaskCard } from "./subtaskCard";
 import { Pencil, Trash2, SquarePlus, EllipsisVertical, Bot } from "lucide-react";
 import { deleteTask, addSubtask, updateSubtask, changeTaskStatus } from "@/utils/taskUtils";
 import apiClient from "@/api/axiosClient";
+import { DateTimeRangeBadges, DateTimeBadge } from "./DateBadges";
 
 interface TaskCardProps {
   task: Task;
@@ -12,45 +13,34 @@ interface TaskCardProps {
   onEdit: (task: Task) => void;
 }
 
-/* ---------- Date helpers ---------- */
-function toDate(v?: string | null) {
-  return v ? new Date(v) : null;
-}
-function addMinutes(d: Date, mins: number) {
-  return new Date(d.getTime() + mins * 60000);
-}
-function fmtDateTime(d: Date) {
-  // tweak formatting if you want
-  return d.toLocaleString();
-}
-/** Prefer scheduledStart/End; otherwise derive end from duration; fallback to dueDate only */
-function renderTimeRange(task: Task) {
-  // prefer explicit schedule fields (set by AI/auto-scheduler)
-  const startISO = (task as any).scheduledStart || task.dueDate || null;
-  const endISO = (task as any).scheduledEnd || null;
+/* ---------- Modern Badge Date/Time Display ---------- */
+/** 
+ * Smart date/time display:
+ * - If scheduledStart/End exist: show modern badges, HIDE due date
+ * - Otherwise: show due date badge
+ */
+function renderTimeDisplay(task: Task) {
+  const scheduledStart = (task as any).scheduledStart || null;
+  const scheduledEnd = (task as any).scheduledEnd || null;
 
-  const start = toDate(startISO);
-  let end = toDate(endISO);
-
-  if (!end && start && task.durationMinutes) {
-    end = addMinutes(start, Number(task.durationMinutes));
+  // Priority 1: Show scheduled time if available
+  if (scheduledStart && scheduledEnd) {
+    return <DateTimeRangeBadges start={scheduledStart} end={scheduledEnd} />;
   }
 
-  if (start && end) {
-    return (
-      <span className="text-success">
-        {`Start: ${fmtDateTime(start)} • End: ${fmtDateTime(end)}`}
-      </span>
-    );
+  // Priority 2: Show scheduled start only
+  if (scheduledStart) {
+    return <DateTimeBadge datetime={scheduledStart} />;
   }
 
-  if (start) {
-    return <span className="text-success">{`Due: ${fmtDateTime(start)}`}</span>;
+  // Priority 3: Show due date only if no scheduled time
+  if (task.dueDate) {
+    return <DateTimeBadge datetime={task.dueDate} />;
   }
 
   return null;
 }
-/* ---------------------------------- */
+/* ------------------------------------------------- */
 
 const getCardStyles = () => {
   const baseStyles = "card shadow-lg hover:shadow-xl transition-shadow";
@@ -292,7 +282,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({
             </div>
 
             <div className="text-sm text-accent" data-testid={`task-datetime-${task.id}`}>
-              {renderTimeRange(task)}
+              {renderTimeDisplay(task)}
             </div>
           </div>
         </div>

@@ -7,6 +7,9 @@ import { FuzzySearchBar } from "@/components/searchBar";
 import NaturalLanguageTaskInput from "@/components/nlpInput";
 import apiClient from "@/api/axiosClient";
 import OnboardingModal from "@/components/OnboardingModal";
+import ConflictResolverModal from "@/components/ConflictResolverModal";
+import SuggestionSelectionModal from "@/components/SuggestionSelectionModal";
+import { isAxiosError } from "axios";
 
 const MainPage: React.FC = () => {
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -15,6 +18,15 @@ const MainPage: React.FC = () => {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | undefined>(undefined);
   const [showOnboarding, setShowOnboarding] = useState(false);
+
+  // Conflict resolution state
+  const [showConflictModal, setShowConflictModal] = useState(false);
+  const [showSuggestionModal, setShowSuggestionModal] = useState(false);
+  const [conflictSuggestions, setConflictSuggestions] = useState<any[]>([]);
+  const [pendingTaskData, setPendingTaskData] = useState<TaskFormData | null>(null);
+  const [isLoadingSuggestions, setIsLoadingSuggestions] = useState(false);
+  const [suggestionPage, setSuggestionPage] = useState(1);
+  const [currentStrategy, setCurrentStrategy] = useState<"day" | "week" | "month" | "auto" | null>(null);
 
   useEffect(() => {
     const theme = localStorage.getItem("theme") || "default";
@@ -65,14 +77,268 @@ const handleTaskSubmit = async (taskData: TaskFormData) => {
       setIsFormOpen(false);
       setEditingTask(undefined);
       await getTasks();
-    } catch (error) {
-      console.error("Error submitting task:", error);
+    } catch (error: any) {
+      // Handle 409 Conflict - time slot already occupied (SILENT, NO ALERTS)
+      // Check multiple possible locations for the status code
+      const status = error?.response?.status || error?.status;
+      const isConflict = status === 409 || 
+                        error?.response?.data?.status === "conflict" ||
+                        (error?.message && error.message.includes("409"));
+      
+      if (isConflict) {
+        console.log("✅ [CONFLICT] Detected in manual task creation - triggering resolution flow");
+        setPendingTaskData(taskData);
+        setShowConflictModal(true);
+        setIsFormOpen(false); // Close the task form
+        setEditingTask(undefined); // Clear editing state
+        return; // Silent return - no error alert
+      }
+      
+      // Only show alert for non-conflict errors
+      console.error("❌ Error submitting task:", error);
+      alert("Failed to create task. Please try again.");
     }
   };
 
   const handleEditTask = (task: Task) => {
     setEditingTask(task);
     setIsFormOpen(true);
+  };
+
+  // Handle conflict resolution strategy selection
+  const handleConflictStrategy = async (strategy: "day" | "week" | "month" | "auto") => {
+    if (!pendingTaskData) return;
+
+    // Reset pagination when selecting new strategy
+    setSuggestionPage(1);
+    setCurrentStrategy(strategy);
+    setIsLoadingSuggestions(true);
+    setShowConflictModal(false);
+
+    try {
+      // CRITICAL FIX: Extract date from task data, priority: scheduledStart > dueDate > now
+      let referenceDate = new Date().toISOString();
+      const taskAsAny = pendingTaskData as any;
+      
+      if (taskAsAny.scheduledStart) {
+        referenceDate = new Date(taskAsAny.scheduledStart).toISOString();
+        console.log("[CONFLICT] Using scheduledStart:", referenceDate);
+      } else if (pendingTaskData.dueDate) {
+        referenceDate = new Date(pendingTaskData.dueDate).toISOString();
+        console.log("[CONFLICT] Using dueDate:", referenceDate);
+      } else {
+        console.log("[CONFLICT] No date in task, using current time:", referenceDate);
+      }
+
+      // Ensure durationMinutes is a valid number
+      const duration = Number(pendingTaskData.durationMinutes) || 60;
+
+      console.log("[DEBUG] Fetching suggestions with:", {
+        durationMinutes: duration,
+        task_type: pendingTaskData.task_type,
+        strategy: strategy,
+        referenceDate: referenceDate,
+      });
+
+      const res = await apiClient.post("/ai/suggest?page=1", {
+        durationMinutes: duration,
+        task_type: pendingTaskData.task_type || "Meeting",
+        strategy: strategy,
+        referenceDate: referenceDate,
+        pageSize: 3,  // UX: Show top 3 scored suggestions per page
+        // CRITICAL FIX: Pass task date fields for backend extraction
+        scheduledStart: (pendingTaskData as any).scheduledStart || null,
+        scheduledEnd: (pendingTaskData as any).scheduledEnd || null,
+        dueDate: pendingTaskData.dueDate || null,
+      });
+
+      const data = res.data;
+      if (Array.isArray(data?.suggestions) && data.suggestions.length > 0) {
+        setConflictSuggestions(data.suggestions);
+        setShowSuggestionModal(true);
+      } else {
+        alert("No available time slots found for the selected strategy.");
+        setShowConflictModal(true); // Re-show conflict modal
+      }
+    } catch (err: any) {
+      console.error("Failed to fetch conflict resolution suggestions:", err);
+      console.error("Error details:", err?.response?.data);
+      alert("Failed to fetch alternative time slots. Please try again.");
+      setShowConflictModal(true); // Re-show conflict modal
+    } finally {
+      setIsLoadingSuggestions(false);
+    }
+  };
+
+  // Handle suggestion selection and retry task creation
+  const handleSuggestionSelect = async (suggestion: any) => {
+    console.log("🔵 [HANDLER] handleSuggestionSelect CALLED!");
+    console.log("🔵 [HANDLER] Function received suggestion:", suggestion);
+    console.log("🔵 [HANDLER] Current pendingTaskData:", pendingTaskData);
+    console.log("🔵 [HANDLER] pendingTaskData is null?", pendingTaskData === null);
+    
+    if (!pendingTaskData) {
+      console.error("🔴 [HANDLER] No pendingTaskData available - EXITING EARLY!");
+      return;
+    }
+    
+    console.log("✅ [HANDLER] pendingTaskData exists, proceeding...");
+
+    try {
+      console.log("[DEBUG] Attempting to create task with merged data...");
+      
+      // Merge pending task data with selected time slot
+      const taskPayload = {
+        ...pendingTaskData,
+        scheduledStart: suggestion.scheduledStart,
+        scheduledEnd: suggestion.scheduledEnd,
+      };
+      
+      console.log("[DEBUG] Task payload:", taskPayload);
+      
+      await createTask(taskPayload);
+
+      console.log("[DEBUG] ✅ Task created successfully!");
+      
+      // Success - close all modals and refresh
+      setShowSuggestionModal(false);
+      setIsFormOpen(false);
+      setPendingTaskData(null);
+      setConflictSuggestions([]);
+      setSuggestionPage(1);
+      setCurrentStrategy(null);
+      await getTasks();
+    } catch (err: any) {
+      console.error("[DEBUG] ❌ Error creating task with suggestion:", err);
+      console.error("[DEBUG] Error details:", err?.response?.data);
+      alert("Failed to create task. Please try again.");
+    }
+  };
+
+  // Handle refresh/pagination for suggestions (Next)
+  const handleRefreshSuggestions = async () => {
+    console.log("🟢 [NEXT] handleRefreshSuggestions CALLED!");
+    console.log("🟢 [NEXT] Current pendingTaskData:", pendingTaskData);
+    console.log("🟢 [NEXT] Current strategy:", currentStrategy);
+    console.log("🟢 [NEXT] Current page:", suggestionPage);
+    
+    if (!pendingTaskData || !currentStrategy) {
+      console.error("🔴 [NEXT] Missing pendingTaskData or currentStrategy - EXITING!");
+      return;
+    }
+    
+    console.log("✅ [NEXT] Prerequisites met, proceeding...");
+
+    const nextPage = suggestionPage + 1;
+    setIsLoadingSuggestions(true);
+
+    try {
+      // CRITICAL FIX: Extract date from task data, priority: scheduledStart > dueDate > now
+      let referenceDate = new Date().toISOString();
+      const taskAsAny = pendingTaskData as any;
+      
+      if (taskAsAny.scheduledStart) {
+        referenceDate = new Date(taskAsAny.scheduledStart).toISOString();
+      } else if (pendingTaskData.dueDate) {
+        referenceDate = new Date(pendingTaskData.dueDate).toISOString();
+      }
+
+      const duration = Number(pendingTaskData.durationMinutes) || 60;
+
+      console.log("[DEBUG] Fetching page", nextPage);
+
+      const res = await apiClient.post(`/ai/suggest`, {
+        durationMinutes: duration,
+        task_type: pendingTaskData.task_type || "Meeting",
+        strategy: currentStrategy,
+        referenceDate: referenceDate,
+        page: nextPage,  // CRITICAL: Pass page in body, not query string
+        pageSize: 3,  // UX: Show top 3 scored suggestions per page
+        // CRITICAL FIX: Pass task date fields for backend extraction
+        scheduledStart: (pendingTaskData as any).scheduledStart || null,
+        scheduledEnd: (pendingTaskData as any).scheduledEnd || null,
+        dueDate: pendingTaskData.dueDate || null,
+      });
+
+      const data = res.data;
+      if (Array.isArray(data?.suggestions) && data.suggestions.length > 0) {
+        // FIX: REPLACE suggestions for strict pagination (don't append)
+        setConflictSuggestions(data.suggestions);
+        setSuggestionPage(nextPage);
+        console.log("[DEBUG] Loaded page", nextPage, "with", data.suggestions.length, "suggestions");
+      } else {
+        alert("No more suggestions available.");
+      }
+    } catch (err: any) {
+      console.error("Failed to fetch more suggestions:", err);
+      alert("Failed to fetch more suggestions. Please try again.");
+    } finally {
+      setIsLoadingSuggestions(false);
+    }
+  };
+
+  // Handle previous page navigation
+  const handlePreviousSuggestions = async () => {
+    console.log("🔵 [PREVIOUS] handlePreviousSuggestions CALLED!");
+    console.log("🔵 [PREVIOUS] Current page:", suggestionPage);
+    
+    if (suggestionPage <= 1) {
+      console.error("🔴 [PREVIOUS] Already at page 1 - EXITING!");
+      return;
+    }
+    
+    if (!pendingTaskData || !currentStrategy) {
+      console.error("🔴 [PREVIOUS] Missing pendingTaskData or currentStrategy - EXITING!");
+      return;
+    }
+    
+    console.log("✅ [PREVIOUS] Prerequisites met, proceeding...");
+
+    const prevPage = suggestionPage - 1;
+    setIsLoadingSuggestions(true);
+
+    try {
+      // CRITICAL FIX: Extract date from task data, priority: scheduledStart > dueDate > now
+      let referenceDate = new Date().toISOString();
+      const taskAsAny = pendingTaskData as any;
+      
+      if (taskAsAny.scheduledStart) {
+        referenceDate = new Date(taskAsAny.scheduledStart).toISOString();
+      } else if (pendingTaskData.dueDate) {
+        referenceDate = new Date(pendingTaskData.dueDate).toISOString();
+      }
+
+      const duration = Number(pendingTaskData.durationMinutes) || 60;
+
+      console.log("[DEBUG] Fetching page", prevPage);
+
+      const res = await apiClient.post(`/ai/suggest`, {
+        durationMinutes: duration,
+        task_type: pendingTaskData.task_type || "Meeting",
+        strategy: currentStrategy,
+        referenceDate: referenceDate,
+        page: prevPage,  // CRITICAL: Pass page in body, not query string
+        pageSize: 3,  // UX: Show top 3 scored suggestions per page
+        // CRITICAL FIX: Pass task date fields for backend extraction
+        scheduledStart: (pendingTaskData as any).scheduledStart || null,
+        scheduledEnd: (pendingTaskData as any).scheduledEnd || null,
+        dueDate: pendingTaskData.dueDate || null,
+      });
+
+      const data = res.data;
+      if (Array.isArray(data?.suggestions) && data.suggestions.length > 0) {
+        setConflictSuggestions(data.suggestions);
+        setSuggestionPage(prevPage);
+        console.log("[DEBUG] Loaded page", prevPage, "with", data.suggestions.length, "suggestions");
+      } else {
+        alert("No suggestions available for this page.");
+      }
+    } catch (err: any) {
+      console.error("Failed to fetch previous suggestions:", err);
+      alert("Failed to fetch previous suggestions. Please try again.");
+    } finally {
+      setIsLoadingSuggestions(false);
+    }
   };
   
   if (loading) {
@@ -143,6 +409,65 @@ const handleTaskSubmit = async (taskData: TaskFormData) => {
       </div>
 
       <NaturalLanguageTaskInput onTaskCreated={getTasks} />
+
+      {/* Conflict Resolution Modal */}
+      <ConflictResolverModal
+        isOpen={showConflictModal}
+        onClose={() => {
+          setShowConflictModal(false);
+          // FIX: Don't clear pendingTaskData here - it needs to survive
+          // the transition to SuggestionSelectionModal
+        }}
+        onResolve={handleConflictStrategy}
+      />
+
+      {/* Suggestion Selection Modal */}
+      {/* DEBUG: Log modal props before rendering */}
+      {showSuggestionModal && (() => {
+        console.log("📦 [MODAL PROPS]", {
+          isOpen: showSuggestionModal,
+          suggestionsCount: conflictSuggestions.length,
+          isLoading: isLoadingSuggestions,
+          hasPendingTaskData: !!pendingTaskData,
+          hasOnSelect: typeof handleSuggestionSelect === 'function',
+          hasOnRefresh: typeof handleRefreshSuggestions === 'function'
+        });
+        return null;
+      })()}
+      <SuggestionSelectionModal
+        isOpen={showSuggestionModal}
+        onClose={() => {
+          setShowSuggestionModal(false);
+          setConflictSuggestions([]);
+          setSuggestionPage(1);
+          setCurrentStrategy(null);
+          // FIX: Clear pendingTaskData HERE when user cancels the whole flow
+          setPendingTaskData(null);
+        }}
+        suggestions={conflictSuggestions}
+        onSelect={handleSuggestionSelect}
+        isLoading={isLoadingSuggestions}
+        metadata={pendingTaskData ? {
+          title: pendingTaskData.title,
+          task_type: pendingTaskData.task_type,
+          priority: pendingTaskData.priority,
+          durationMinutes: pendingTaskData.durationMinutes,
+        } : null}
+        page={suggestionPage}
+        onRefresh={handleRefreshSuggestions}
+        onPrevious={handlePreviousSuggestions}
+        onBackToOptions={() => {
+          console.log("[MANUAL FLOW] User requested back to strategy selection");
+          setShowSuggestionModal(false);
+          setConflictSuggestions([]);
+          setSuggestionPage(1);
+          setCurrentStrategy(null);
+          setShowConflictModal(true); // Re-show strategy selection
+        }}
+        hasMorePages={conflictSuggestions.length >= 3}
+        isConflict={true} // This is a conflict resolution flow
+      />
+
       {
         tasks.length === 0 ? (
           <div className="text-center py-8" data-testid="task-list-empty">

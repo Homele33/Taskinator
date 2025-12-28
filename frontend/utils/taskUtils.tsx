@@ -43,8 +43,17 @@ export const createTask = async (
   try {
     const response = await apiClient.post("/tasks", payload);
     return response.data;
-  } catch (error) {
-    console.error("Error creating task:", error);
+  } catch (error: any) {
+    // For 409 Conflict errors, throw silently (no console errors)
+    // The caller will handle this gracefully with the conflict resolution modal
+    if (error?.response?.status === 409) {
+      throw error; // Re-throw for caller to handle, but without logging
+    }
+    
+    // For other errors, log details for debugging
+    console.error("[createTask] Error creating task:", error);
+    console.error("[createTask] Error status:", error?.response?.status);
+    console.error("[createTask] Error data:", error?.response?.data);
     throw error;
   }
 };

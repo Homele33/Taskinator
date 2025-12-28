@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { Task } from "@/components/tasksTypes";
 import { fetchTasks } from "@/utils/taskUtils";
+import { DateTimeRangeBadges, DateTimeBadge, TimeRangeBadge } from "@/components/DateBadges";
+import { formatTime } from "@/utils/dateFormat";
 
 interface CalendarDay {
   day: number;
@@ -270,16 +272,26 @@ const TaskCalendar: React.FC<TaskCalendarProps> = ({ initialTasks = [] }) => {
           </div>
         )}
 
-        {task.dueDate && (
+        {/* Show scheduled time if available, otherwise show due date */}
+        {(task.scheduledStart || task.scheduledEnd) ? (
           <div className="mt-2">
-            <h5 className="text-sm text-base-content font-medium opacity-70">
+            <h5 className="text-sm text-base-content font-medium opacity-70 mb-2">
+              Scheduled Time
+            </h5>
+            {task.scheduledStart && task.scheduledEnd ? (
+              <DateTimeRangeBadges start={task.scheduledStart} end={task.scheduledEnd} />
+            ) : (
+              <DateTimeBadge datetime={task.scheduledStart || task.scheduledEnd} />
+            )}
+          </div>
+        ) : task.dueDate ? (
+          <div className="mt-2">
+            <h5 className="text-sm text-base-content font-medium opacity-70 mb-2">
               Due Date
             </h5>
-            <p className="mt-1">
-              {new Date(task.dueDate).toLocaleString()}
-            </p>
+            <DateTimeBadge datetime={task.dueDate} />
           </div>
-        )}
+        ) : null}
 
         {task.subtasks.length > 0 && (
           <div className="mt-4">
@@ -318,58 +330,160 @@ const TaskCalendar: React.FC<TaskCalendarProps> = ({ initialTasks = [] }) => {
     );
   };
 
+  // Get priority color for left border
+  const getPriorityBarColor = (priority: string) => {
+    switch (priority) {
+      case "HIGH":
+        return "border-l-error";
+      case "MEDIUM":
+        return "border-l-warning";
+      case "LOW":
+        return "border-l-info";
+      default:
+        return "border-l-base-300";
+    }
+  };
+
   // Render task list
   const renderTaskList = () => {
     return (
       <>
-        <h3 className="card-title text-base-content">
+        {/* Header */}
+        <h3 className="text-xl font-bold text-base-content mb-4">
           {selectedDay
-            ? `Tasks for ${monthNames[selectedDay.month]} ${selectedDay.day}, ${selectedDay.year
-            }`
+            ? `Tasks for ${monthNames[selectedDay.month]} ${selectedDay.day}, ${selectedDay.year}`
             : "Select a day to view tasks"}
         </h3>
 
-        {selectedDay &&
-          (dayTasks.length > 0 ? (
-            <ul className="menu p-0">
-              {dayTasks.map((task) => (
-                <li key={task.id}>
-                  <button
+        {/* Task List Container */}
+        {selectedDay && (
+          <div className="bg-base-200/50 rounded-lg p-4">
+            {dayTasks.length > 0 ? (
+              <div className="flex flex-col gap-3">
+                {dayTasks.map((task) => (
+                  <div
+                    key={task.id}
                     onClick={() => handleTaskClick(task)}
-                    className="border-b border-base-300 py-2 hover:bg-base-300 w-full text-base-content text-left"
+                    className={`card bg-base-100 shadow-sm border border-base-300 border-l-4 ${getPriorityBarColor(
+                      task.priority
+                    )} cursor-pointer hover:shadow-md hover:border-l-8 transition-all duration-200`}
                   >
-                    <div className="flex items-center justify-between w-full">
-                      <div className="flex items-center">
-                        <span
-                          className={`w-3 h-3 rounded-full mr-2 ${task.priority === "HIGH"
-                            ? "bg-error"
-                            : task.priority === "MEDIUM"
-                              ? "bg-warning"
-                              : "bg-success"
-                            }`}
-                        ></span>
-                        <span>{task.title}</span>
-                      </div>
-                      <span className={`${statusClasses[task.status]} ml-2`}>
-                        { }
-                      </span>
-                      {task.dueDate && (
-                        <span>{new Date(task.dueDate).toLocaleTimeString()}</span>
-                      )}
-                    </div>
-                  </button>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p className="text-base-content opacity-70">
-              No tasks scheduled for this day.
-            </p>
-          ))}
+                    <div className="card-body p-4">
+                      {/* Task Title */}
+                      <h4 className="font-semibold text-base text-base-content mb-2 truncate">
+                        {task.title}
+                      </h4>
 
+                      {/* Time Badges */}
+                      <div className="flex items-center gap-2 flex-wrap">
+                        {task.scheduledStart && task.scheduledEnd ? (
+                          <DateTimeRangeBadges
+                            start={task.scheduledStart}
+                            end={task.scheduledEnd}
+                          />
+                        ) : task.dueDate ? (
+                          <div className="badge badge-outline gap-1 text-xs">
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              className="w-3 h-3"
+                            >
+                              <circle cx="12" cy="12" r="10"></circle>
+                              <polyline points="12 6 12 12 16 14"></polyline>
+                            </svg>
+                            {formatTime(task.dueDate)}
+                          </div>
+                        ) : null}
+
+                        {/* Priority Badge */}
+                        <span
+                          className={`badge badge-sm ${
+                            task.priority === "HIGH"
+                              ? "badge-error"
+                              : task.priority === "MEDIUM"
+                              ? "badge-warning"
+                              : "badge-info"
+                          }`}
+                        >
+                          {task.priority}
+                        </span>
+                      </div>
+
+                      {/* Status */}
+                      <div className="mt-2">
+                        <span
+                          className={`badge badge-sm ${
+                            task.status === "COMPLETED"
+                              ? "badge-success"
+                              : task.status === "IN_PROGRESS"
+                              ? "badge-primary"
+                              : "badge-ghost"
+                          }`}
+                        >
+                          {task.status.replace("_", " ")}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              /* Empty State */
+              <div className="flex flex-col items-center justify-center py-12 text-center">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="w-16 h-16 text-base-content opacity-30 mb-4"
+                >
+                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                  <line x1="16" y1="2" x2="16" y2="6"></line>
+                  <line x1="8" y1="2" x2="8" y2="6"></line>
+                  <line x1="3" y1="10" x2="21" y2="10"></line>
+                  <line x1="8" y1="14" x2="16" y2="14"></line>
+                  <line x1="8" y1="18" x2="13" y2="18"></line>
+                </svg>
+                <p className="text-base-content opacity-70 text-lg font-medium">
+                  No tasks scheduled for this day
+                </p>
+                <p className="text-base-content opacity-50 text-sm mt-2">
+                  Your day is free!
+                </p>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* No Day Selected State */}
         {!selectedDay && (
-          <div className="flex items-center justify-center h-32 opacity-50">
-            <p className="text-base-content">Click on a date to view tasks</p>
+          <div className="flex flex-col items-center justify-center py-16 text-center">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="w-20 h-20 text-base-content opacity-20 mb-4"
+            >
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+              <line x1="16" y1="2" x2="16" y2="6"></line>
+              <line x1="8" y1="2" x2="8" y2="6"></line>
+              <line x1="3" y1="10" x2="21" y2="10"></line>
+            </svg>
+            <p className="text-base-content opacity-50 text-base">
+              Click on a date to view tasks
+            </p>
           </div>
         )}
       </>
