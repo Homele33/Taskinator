@@ -50,15 +50,31 @@ const MainPage: React.FC = () => {
   };
 
   const getTasks = async () => {
+    console.log("[TASK FETCH] ============================================");
+    console.log("[TASK FETCH] getTasks() called - fetching from server...");
     try {
       const data = await fetchTasks();
+      console.log("[TASK FETCH] Received response from server");
+      console.log("[TASK FETCH] Total tasks:", data.tasks?.length || 0);
+      console.log("[TASK FETCH] Task IDs:", data.tasks?.map((t: Task) => t.id));
+      console.log("[TASK FETCH] Task details:");
+      data.tasks?.forEach((task: Task, idx: number) => {
+        console.log(`[TASK FETCH]   Task ${idx + 1} (ID: ${task.id}):`);
+        console.log(`[TASK FETCH]     - Title: ${task.title}`);
+        console.log(`[TASK FETCH]     - Due Date: ${task.dueDate}`);
+        console.log(`[TASK FETCH]     - Scheduled Start: ${task.scheduledStart}`);
+      });
+      
+      console.log("[TASK FETCH] Setting tasks state...");
       setTasks(data.tasks);
       setError(null);
+      console.log("[TASK FETCH] ✅ Tasks state updated successfully");
     } catch (err) {
+      console.error("[TASK FETCH] ❌ Error fetching tasks:", err);
       setError("Failed to load tasks. Please try again later.");
-      console.error("Error fetching tasks:", err);
     } finally {
       setLoading(false);
+      console.log("[TASK FETCH] ============================================");
     }
   };
 
