@@ -28,6 +28,8 @@ const NaturalLanguageTaskInput: React.FC<NaturalLanguageTaskInputProps> = ({ onT
     priority?: "LOW" | "MEDIUM" | "HIGH";
     durationMinutes?: number | null;
     dueDateTime?: string | null;
+    windowStart?: string | null;  // CRITICAL FIX: Store time window constraints
+    windowEnd?: string | null;    // CRITICAL FIX: Store time window constraints
   } | null>(null);
   const [lastQuery, setLastQuery] = useState<string>("");
 
@@ -94,14 +96,45 @@ const NaturalLanguageTaskInput: React.FC<NaturalLanguageTaskInputProps> = ({ onT
           priority: (parsed.priority as any) || "MEDIUM",
           durationMinutes: parsed.durationMinutes ?? null,
           dueDateTime: parsed.dueDateTime ?? null,
+          windowStart: (parsed as any).windowStart ?? null,
+          windowEnd: (parsed as any).windowEnd ?? null,
         });
 
         // CASE 4: Backend already created task with default duration
         if (data.shouldCreateDirectly && data.task) {
-          console.log("[CASE 4] Task already created by backend:", data.task);
-          console.log("[CASE 4] Case:", data.case);
+          console.log("[CASE 4 DEBUG] ============================================");
+          console.log("[CASE 4 DEBUG] Task created by backend (Rule 4)");
+          console.log("[CASE 4 DEBUG] Task ID:", data.task.id);
+          console.log("[CASE 4 DEBUG] Task Title:", data.task.title);
+          console.log("[CASE 4 DEBUG] Scheduled Start:", data.task.scheduledStart);
+          console.log("[CASE 4 DEBUG] Scheduled End:", data.task.scheduledEnd);
+          console.log("[CASE 4 DEBUG] Due Date:", data.task.dueDate);
+          console.log("[CASE 4 DEBUG] Full task object:", data.task);
+          console.log("[CASE 4 DEBUG] Case identifier:", data.case);
+          console.log("[CASE 4 DEBUG] onTaskCreated callback exists:", !!onTaskCreated);
+          console.log("[CASE 4 DEBUG] About to call onTaskCreated to refresh parent...");
+          
           resetState();
-          await onTaskCreated?.();
+          
+          if (onTaskCreated) {
+            console.log("[CASE 4 DEBUG] Calling onTaskCreated()...");
+            await onTaskCreated();
+            console.log("[CASE 4 DEBUG] ✅ onTaskCreated() completed");
+            
+            // Silent task creation - log details but no popup
+            if (data.task.scheduledStart) {
+              const taskDate = new Date(data.task.scheduledStart);
+              const taskMonth = taskDate.toLocaleString('default', { month: 'long', year: 'numeric' });
+              const taskDay = taskDate.getDate();
+              
+              console.log(`[CASE 4 DEBUG] ✅ Task created successfully for ${taskMonth} ${taskDay}`);
+              console.log("[CASE 4 DEBUG] Task will appear on calendar automatically");
+            }
+          } else {
+            console.error("[CASE 4 DEBUG] ❌ onTaskCreated callback is undefined!");
+          }
+          
+          console.log("[CASE 4 DEBUG] ============================================");
           return;
         }
 
@@ -127,6 +160,8 @@ const NaturalLanguageTaskInput: React.FC<NaturalLanguageTaskInputProps> = ({ onT
               priority: conflictData.priority || parsed.priority || "MEDIUM",
               durationMinutes: conflictData.durationMinutes ?? parsed.durationMinutes ?? null,
               dueDateTime: conflictData.scheduledStart || conflictData.dueDate || parsed.dueDateTime || null,
+              windowStart: (parsed as any).windowStart ?? null,
+              windowEnd: (parsed as any).windowEnd ?? null,
             });
             
             setShowConflictModal(true);
@@ -152,9 +187,13 @@ const NaturalLanguageTaskInput: React.FC<NaturalLanguageTaskInputProps> = ({ onT
         priority: (parsed.priority as any) || "MEDIUM",
         durationMinutes: parsed.durationMinutes ?? null,
         dueDateTime: extractedDate,
+        windowStart: (parsed as any).windowStart ?? null,  // CRITICAL FIX: Preserve window constraints
+        windowEnd: (parsed as any).windowEnd ?? null,      // CRITICAL FIX: Preserve window constraints
       };
       
       console.log("[NLP PARSE] Setting parsedMeta to:", newParsedMeta);
+      console.log("[WINDOW CONSTRAINT] windowStart:", newParsedMeta.windowStart);
+      console.log("[WINDOW CONSTRAINT] windowEnd:", newParsedMeta.windowEnd);
       setParsedMeta(newParsedMeta);
       
       // If we have a date but no exact time (partial status), fetch date-locked suggestions
@@ -165,7 +204,7 @@ const NaturalLanguageTaskInput: React.FC<NaturalLanguageTaskInputProps> = ({ onT
         
         try {
           const res = await apiClient.post("/ai/suggest", {
-            durationMinutes: parsed.durationMinutes ?? 60,
+            durationMinutes: parsed.durationMinutes || undefined, // Backend uses user preference if not provided
             task_type: parsed.task_type || "Meeting",
             strategy: "day", // Force 'day' strategy for date locking
             referenceDate: new Date(extractedDate).toISOString(),
@@ -208,6 +247,8 @@ const NaturalLanguageTaskInput: React.FC<NaturalLanguageTaskInputProps> = ({ onT
             priority: conflictData.priority || parsed.priority || "MEDIUM",
             durationMinutes: conflictData.durationMinutes ?? parsed.durationMinutes ?? null,
             dueDateTime: conflictData.scheduledStart || conflictData.dueDate || parsed.dueDateTime || null,
+            windowStart: (parsed as any).windowStart ?? null,
+            windowEnd: (parsed as any).windowEnd ?? null,
           });
           
           setShowConflictModal(true);
@@ -336,9 +377,13 @@ const NaturalLanguageTaskInput: React.FC<NaturalLanguageTaskInputProps> = ({ onT
         console.log("[PAGINATION] ✅ Using locked date:", referenceDate);
       }
       
+      // CRITICAL FIX: Extract window constraints from parsedMeta
+      const windowStart = parsedMeta?.windowStart || null;
+      const windowEnd = parsedMeta?.windowEnd || null;
+      
       // CRITICAL: Use local variables to ensure constraints are preserved
       const requestPayload = {
-        durationMinutes: lockedDuration ?? 60,
+        durationMinutes: lockedDuration || undefined, // Backend uses user preference if not provided
         task_type: lockedTaskType || parsedMeta?.task_type || "Meeting",
         strategy: preservedConstraints?.strategy || lastStrategy,
         referenceDate: referenceDate,
@@ -346,14 +391,24 @@ const NaturalLanguageTaskInput: React.FC<NaturalLanguageTaskInputProps> = ({ onT
         pageSize: 3,
         dueDate: lockedDate || null,
         scheduledStart: lockedDate || null,  // CRITICAL: Must be present for date-locked searches
+        windowStart: windowStart,  // CRITICAL FIX: Preserve window constraints for "next week" etc.
+        windowEnd: windowEnd,      // CRITICAL FIX: Preserve window constraints for "next week" etc.
       };
       
       console.log("[PAGINATION] ============================================");
       console.log("[PAGINATION] Request payload for page", targetPage);
       console.log("[PAGINATION]   - scheduledStart:", requestPayload.scheduledStart);
+      console.log("[PAGINATION]   - windowStart:", requestPayload.windowStart);
+      console.log("[PAGINATION]   - windowEnd:", requestPayload.windowEnd);
       console.log("[PAGINATION]   - strategy:", requestPayload.strategy);
       console.log("[PAGINATION]   - referenceDate:", requestPayload.referenceDate);
       console.log("[PAGINATION]   - page:", requestPayload.page);
+      
+      if (windowStart && windowEnd) {
+        console.log("[PAGINATION] ✅ Sending window constraint:", { windowStart, windowEnd });
+      } else {
+        console.log("[PAGINATION] ⚪ No window constraint (flexible date range)");
+      }
       
       // CRITICAL VALIDATION: Ensure scheduledStart is present for date-locked searches
       if (lastStrategy === "day" && !requestPayload.scheduledStart) {
@@ -513,7 +568,7 @@ const NaturalLanguageTaskInput: React.FC<NaturalLanguageTaskInputProps> = ({ onT
       }
 
       const res = await apiClient.post("/ai/suggest", {
-        durationMinutes: parsedMeta.durationMinutes ?? 60,
+        durationMinutes: parsedMeta.durationMinutes || undefined, // Backend uses user preference if not provided
         task_type: parsedMeta.task_type || "Meeting",
         strategy: strategy,
         referenceDate: referenceDate,

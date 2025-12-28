@@ -41,6 +41,27 @@ def _infer_day_window(text: str):
     return None, None
 
 
+# ------------ helper: get user's default duration ------------
+
+def _get_user_default_duration(user_id: int) -> int:
+    """
+    Fetch the user's default_duration_minutes from preferences.
+    
+    Args:
+        user_id: The ID of the user
+    
+    Returns:
+        int: The user's default duration in minutes (fallback to 60 if not set)
+    """
+    from models import UserPreferences
+    prefs = db.session.query(UserPreferences).filter_by(user_id=user_id).first()
+    default_duration = prefs.default_duration_minutes if prefs else 60
+    
+    print(f"[DURATION DEBUG] User {user_id} default_duration_minutes: {default_duration}")
+    
+    return default_duration
+
+
 # ------------ /api/ai/parseTask ------------
 
 @ai_bp.route("/parseTask", methods=["POST", "OPTIONS"])
@@ -89,11 +110,9 @@ def parse_task():
         print(f"[CASE 4] Fetching user's default_duration_minutes...")
         
         # Fetch user's default duration from preferences
-        from models import UserPreferences
-        prefs = db.session.query(UserPreferences).filter_by(user_id=g.user.id).first()
-        default_duration = prefs.default_duration_minutes if prefs else 60
+        default_duration = _get_user_default_duration(g.user.id)
         
-        print(f"[CASE 4] default_duration_minutes: {default_duration}")
+        print(f"[DURATION DEBUG] No duration in NLP, using User Preference: {default_duration} minutes")
         print(f"[CASE 4] Setting duration to {default_duration} and creating task directly")
         
         # Add duration to parsed data
@@ -179,7 +198,13 @@ def parse_task():
         if parsed.get("dueDateTime"):
             try:
                 start_dt = datetime.fromisoformat(parsed["dueDateTime"])
-                duration = int(parsed.get("durationMinutes") or 60)
+                # Use user preference if duration not in NLP
+                duration = parsed.get("durationMinutes")
+                if not duration:
+                    duration = _get_user_default_duration(g.user.id)
+                    print(f"[DURATION DEBUG] No duration in NLP, using User Preference: {duration} minutes")
+                else:
+                    duration = int(duration)
                 end_dt = start_dt + timedelta(minutes=duration)
                 
                 print(f"\n[PARSE TASK OVERLAP CHECK] ============================================")
@@ -227,7 +252,9 @@ def parse_task():
     # IMPORTANT: Only default duration if it's actually missing, don't override parsed value
     duration = parsed.get("durationMinutes")
     if not duration:
-        duration = 60  # Default only if not parsed
+        # CRITICAL FIX: Use user preference instead of hardcoded 60
+        duration = _get_user_default_duration(g.user.id)
+        print(f"[DURATION DEBUG] No duration in NLP, using User Preference: {duration} minutes")
     task_type = parsed.get("task_type") or "Meeting"
 
     try:
@@ -357,7 +384,13 @@ def create_from_text():
 
     parsed = result["parsed"]
     start_dt = datetime.fromisoformat(parsed["dueDateTime"])
-    duration = int(parsed.get("durationMinutes") or 60)
+    # Use user preference if duration not in NLP
+    duration = parsed.get("durationMinutes")
+    if not duration:
+        duration = _get_user_default_duration(g.user.id)
+        print(f"[DURATION DEBUG] No duration in NLP, using User Preference: {duration} minutes")
+    else:
+        duration = int(duration)
     end_dt = start_dt + timedelta(minutes=duration)
 
     task_type = parsed.get("task_type") or "Meeting"
@@ -520,7 +553,7 @@ def get_manual_suggestions():
     alternative suggestions based on their chosen strategy (day/week/month/auto).
     
     Request Body:
-        - durationMinutes (int): Task duration in minutes (default: 60)
+        - durationMinutes (int, optional): Task duration in minutes (uses user preference if not provided)
         - task_type (str): Type of task - Meeting/Training/Studies (default: "Meeting")
         - strategy (str): Search strategy - 'day'/'week'/'month'/'auto' (default: "auto")
         - referenceDate (str, optional): ISO format datetime to use as starting point
@@ -562,7 +595,14 @@ def get_manual_suggestions():
         page_size = 20
     
     # Parse input parameters
-    duration = int(data.get("durationMinutes", 60))
+    # CRITICAL FIX: Use user preference instead of hardcoded 60
+    duration = data.get("durationMinutes")
+    if duration is not None:
+        duration = int(duration)
+    else:
+        duration = _get_user_default_duration(g.user.id)
+        print(f"[DURATION DEBUG] No duration in request, using User Preference: {duration} minutes")
+    
     task_type = data.get("task_type", "Meeting")
     if task_type not in ("Meeting", "Training", "Studies"):
         task_type = "Meeting"
@@ -653,7 +693,41 @@ def get_manual_suggestions():
     window_start = now
     window_end = None  # Default for 'auto'
     
-    if strategy == "day":
+    # CRITICAL FIX: Check if windowStart/windowEnd are provided in request (e.g., "next week")
+    # If present, they override strategy-based calculation
+    request_window_start = data.get("windowStart")
+    request_window_end = data.get("windowEnd")
+    
+    if request_window_start and request_window_end:
+        try:
+            window_start = datetime.fromisoformat(request_window_start.replace('Z', '+00:00'))
+            window_end = datetime.fromisoformat(request_window_end.replace('Z', '+00:00'))
+            
+            # Convert to local time if timezone-aware
+            if window_start.tzinfo is not None:
+                window_start = window_start.astimezone(None).replace(tzinfo=None)
+            if window_end.tzinfo is not None:
+                window_end = window_end.astimezone(None).replace(tzinfo=None)
+            
+            print(f"\n[WINDOW CONSTRAINT] ============================================")
+            print(f"[WINDOW CONSTRAINT] ✅ Using window from request (e.g., 'next week')")
+            print(f"[WINDOW CONSTRAINT] windowStart: {window_start}")
+            print(f"[WINDOW CONSTRAINT] windowEnd: {window_end}")
+            print(f"[WINDOW CONSTRAINT] Duration: {(window_end - window_start).days + 1} days")
+            print(f"[WINDOW CONSTRAINT] This overrides strategy-based calculation")
+            print(f"[WINDOW CONSTRAINT] ============================================\n")
+            
+            # Skip strategy-based calculation, window is already set
+        except (ValueError, AttributeError) as e:
+            print(f"[WINDOW CONSTRAINT] ❌ Failed to parse window constraints: {e}")
+            print(f"[WINDOW CONSTRAINT] Falling back to strategy-based calculation")
+            # Continue with strategy-based calculation below
+    
+    if not (request_window_start and request_window_end):
+        # No explicit window provided, calculate based on strategy
+        print(f"[WINDOW CONSTRAINT] ⚪ No window constraint in request, using strategy: {strategy}")
+    
+    if strategy == "day" and not (request_window_start and request_window_end):
         # Same day: Use the FULL day of the target task (00:00 to 23:59:59)
         # Priority: Use target_task_date if available, otherwise fall back to referenceDate (now)
         print(f"\n[WINDOW CALCULATION] ============================================")
@@ -684,7 +758,7 @@ def get_manual_suggestions():
         print(f"[WINDOW CALCULATION] ✅ Final window_start: {window_start}")
         print(f"[WINDOW CALCULATION] ✅ Final window_end: {window_end}")
         print(f"[WINDOW CALCULATION] ============================================\n")
-    elif strategy == "week":
+    elif strategy == "week" and not (request_window_start and request_window_end):
         # This week: from now until end of current calendar week (Saturday 23:59:59)
         # weekday() returns: 0=Monday, 1=Tuesday, ..., 5=Saturday, 6=Sunday
         current_weekday = now.weekday()
@@ -705,7 +779,7 @@ def get_manual_suggestions():
         print(f"[WINDOW CALCULATION] Days until Saturday: {days_until_saturday}")
         print(f"[WINDOW CALCULATION] ✅ window_end set to: {window_end} (Saturday)")
         print(f"[WINDOW CALCULATION] ============================================\n")
-    elif strategy == "month":
+    elif strategy == "month" and not (request_window_start and request_window_end):
         # This month: from start of next week (Sunday) until last day of current month
         # Calculate current week's Saturday
         current_weekday = now.weekday()  # 0=Mon, 5=Sat, 6=Sun
@@ -740,7 +814,7 @@ def get_manual_suggestions():
         print(f"[MONTH STRATEGY] Window: {window_start} to {window_end}")
         print(f"[WINDOW CALCULATION] ✅ window_end set to: {window_end} (Last day of month)")
         print(f"[WINDOW CALCULATION] ============================================\n")
-    elif strategy == "auto":
+    elif strategy == "auto" and not (request_window_start and request_window_end):
         # Next Best Slot: Global quality search starting from CURRENT TIME
         # CRITICAL: Search starts from NOW (datetime.now()), not from conflict date
         # This allows the system to find best slots in the user's calendar from today onwards

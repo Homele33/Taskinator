@@ -29,12 +29,26 @@ const TaskCalendar: React.FC<TaskCalendarProps> = ({ initialTasks = [] }) => {
   }, []);
 
   const getTasks = async () => {
+    console.log("[CALENDAR FETCH] ============================================");
+    console.log("[CALENDAR FETCH] Fetching tasks for calendar view...");
     try {
       const data = await fetchTasks();
+      console.log("[CALENDAR FETCH] Received tasks:", data.tasks?.length || 0);
+      console.log("[CALENDAR FETCH] Task IDs:", data.tasks?.map((t: Task) => t.id));
+      console.log("[CALENDAR FETCH] Tasks with dates:");
+      data.tasks?.forEach((task: Task) => {
+        if (task.scheduledStart || task.dueDate) {
+          console.log(`[CALENDAR FETCH]   - Task ${task.id}: ${task.title}`);
+          console.log(`[CALENDAR FETCH]     Scheduled Start: ${task.scheduledStart}`);
+          console.log(`[CALENDAR FETCH]     Due Date: ${task.dueDate}`);
+        }
+      });
       setTasks(data.tasks);
+      console.log("[CALENDAR FETCH] ✅ Calendar tasks state updated");
     } catch (err) {
-      console.error("Error fetching tasks:", err);
+      console.error("[CALENDAR FETCH] ❌ Error fetching tasks:", err);
     }
+    console.log("[CALENDAR FETCH] ============================================");
   };
 
   // State for current date display
@@ -134,13 +148,34 @@ const TaskCalendar: React.FC<TaskCalendarProps> = ({ initialTasks = [] }) => {
       }
 
       // Add tasks to calendar days
+      console.log("[CALENDAR RENDER] ============================================");
+      console.log("[CALENDAR RENDER] Assigning tasks to calendar days");
+      console.log("[CALENDAR RENDER] Current month:", monthNames[currentMonth], currentYear);
+      console.log("[CALENDAR RENDER] Total tasks to assign:", tasks.length);
+      
       calendarDays.forEach((calDay) => {
         const dateString: string = `${calDay.year}-${String(
           calDay.month + 1
         ).padStart(2, "0")}-${String(calDay.day).padStart(2, "0")}`;
 
-        calDay.tasks = tasks.filter((task) => task.dueDate?.split("T")[0] === dateString);
+        // CRITICAL FIX: Check both dueDate AND scheduledStart for task assignment
+        // Rule 4 tasks may have scheduledStart but not dueDate
+        calDay.tasks = tasks.filter((task) => {
+          const dueDateMatch = task.dueDate?.split("T")[0] === dateString;
+          const scheduledStartMatch = task.scheduledStart?.split("T")[0] === dateString;
+          
+          if (dueDateMatch || scheduledStartMatch) {
+            console.log(`[CALENDAR RENDER] ✅ Task ${task.id} assigned to ${dateString}`);
+            console.log(`[CALENDAR RENDER]   - Title: ${task.title}`);
+            console.log(`[CALENDAR RENDER]   - Due Date: ${task.dueDate}`);
+            console.log(`[CALENDAR RENDER]   - Scheduled Start: ${task.scheduledStart}`);
+          }
+          
+          return dueDateMatch || scheduledStartMatch;
+        });
       });
+      
+      console.log("[CALENDAR RENDER] ============================================");
 
       setCalendar(calendarDays);
     };
